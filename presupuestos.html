@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CLEANBOX · Presupuestos</title>
+<!-- Google Fonts: Outfit & Atkinson Hyperlegible -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#005d79",
+            "background": "#f3f7f9",
+            "outline": "#b9c9d2",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffdcbe",
+            "surface-dim": "#d7dadd",
+            "primary-container": "#0f7799",
+            "on-surface-variant": "#3f484d",
+            "primary-fixed-dim": "#7fd1f6",
+            "error": "#b3261e",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed-variant": "#004d65",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e0e3e6",
+            "secondary": "#2a5ea6",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#181c1e",
+            "surface": "#fbfdfe",
+            "tertiary-container": "#9c601b",
+            "on-tertiary-fixed": "#2d1600",
+            "surface-container": "#ebeef1",
+            "outline-variant": "#bec8ce",
+            "on-secondary-fixed-variant": "#00468c",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#004286",
+            "on-primary-container": "#e3f5ff",
+            "inverse-on-surface": "#eef1f4",
+            "surface-container-low": "#f1f4f7",
+            "surface-variant": "#e0e3e6",
+            "on-primary-fixed": "#001f2a",
+            "surface-bright": "#f7fafd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006685",
+            "on-primary": "#f7fcfe",
+            "tertiary-fixed-dim": "#ffb872",
+            "secondary-container": "#83b1ff",
+            "on-background": "#181c1e",
+            "on-tertiary-container": "#ffefe3",
+            "secondary-fixed": "#d6e3ff",
+            "inverse-primary": "#7fd1f6",
+            "surface-container-high": "#e6e8eb",
+            "on-tertiary-fixed-variant": "#6a3c00",
+            "primary-fixed": "#bfe9ff",
+            "tertiary": "#c98a12",
+            "inverse-surface": "#2d3133"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "16px",
+            "space-xs": "4px",
+            "space-sm": "8px",
+            "space-xl": "40px",
+            "space-lg": "24px",
+            "space-md": "16px",
+            "margin": "24px"
+          },
+          "fontFamily": {
+            "headline-md": ["Outfit"],
+            "display": ["Outfit"],
+            "label-md": ["Atkinson Hyperlegible"],
+            "body-md": ["Atkinson Hyperlegible"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["15px", { "lineHeight": "20px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230f7799'/%3E%3C/svg%3E">
+</head>
+<body data-view="presupuestos" class="bg-background text-on-background font-body-md text-body-md h-full flex overflow-hidden antialiased">
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="w-[240px] h-screen flex flex-col justify-between bg-surface border-r border-outline shrink-0 z-40 select-none">
+<div class="flex flex-col">
+<div class="p-space-md border-b border-outline flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center border border-primary shrink-0 text-primary overflow-hidden" data-logo>
+<span class="material-symbols-outlined text-[24px]">dry_cleaning</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight leading-none">CLEANBOX</span>
+<span class="font-label-md text-[10px] tracking-widest text-on-surface-variant font-bold mt-1">TINTORERÍA</span>
+</div>
+</div>
+<nav aria-label="Navegación principal" class="p-space-md flex flex-col gap-1.5">
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="pedidos" href="index.html">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>Pedidos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="venta" href="venta.html">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+<span>Nueva venta</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="clientes" href="clientes.html">
+<span class="material-symbols-outlined text-[20px]">people</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="caja" href="caja.html">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>Caja</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="facturar" href="facturar.html">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span>Facturar</span>
+</a>
+<a class="flex items-center gap-space-sm bg-primary-container text-on-primary-container rounded-lg px-space-md py-space-sm font-label-md text-label-md active:scale-[0.98] transition-transform duration-100" data-nav="presupuestos" href="presupuestos.html">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+<span>Presupuestos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="precios" href="precios.html">
+<span class="material-symbols-outlined text-[20px]">sell</span>
+<span>Precios</span>
+</a>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="ajustes" href="ajustes.html">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-space-md border-t border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[26px]">account_circle</span>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-[13px] text-on-surface font-bold truncate" data-user-name>Hernán · Dueño</span>
+<span class="text-[11px] text-on-surface-variant" data-user-role>Administración</span>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-[0.95] transition-colors" data-switch-user title="Cambiar de usuario (demo)" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-md bg-surface-container-lowest border-b border-outline sticky top-0 z-30 shrink-0">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-sm">
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface">Presupuestos</h1>
+
+</div>
+<div class="hidden lg:flex items-center gap-space-sm text-on-surface-variant text-label-md font-label-md border-l border-outline pl-space-md text-[13px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>24 de octubre de 2026</span>
+
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<!-- Quick search in quotes -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-low border border-outline rounded-lg pl-8 pr-space-sm py-1.5 text-[14px] focus:outline-none focus:border-primary text-on-surface placeholder:text-on-surface-variant" placeholder="Buscar presupuesto..." type="text"/>
+</div>
+<!-- Action Icons -->
+<div class="flex items-center gap-1">
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Notificaciones">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Ayuda y soporte">
+<span class="material-symbols-outlined text-[22px]">help_outline</span>
+</button>
+</div>
+<button class="flex items-center gap-1 bg-primary text-on-primary px-space-md py-1.5 rounded-lg font-label-md text-[13px] hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Nuevo presupuesto</span>
+</button>
+</div>
+</header>
+<!-- Content Workspace: 2 Balanced Columns -->
+<main class="flex-1 p-space-md gap-space-md grid grid-cols-12 overflow-y-auto bg-background">
+<!-- ==================== LEFT COLUMN: FORM & EDITING ==================== -->
+<section class="col-span-12 xl:col-span-6 flex flex-col gap-space-md">
+<!-- Header & Correlative Card -->
+<div class="bg-surface-container-lowest border border-outline rounded-lg p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="p-2 bg-surface-variant rounded text-primary">
+<span class="material-symbols-outlined text-[22px]">edit_note</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-headline-md font-headline-md font-bold text-on-surface">Nuevo presupuesto</h2>
+<span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed text-[12px] font-bold rounded">
+                  Borrador #P-0031
+                </span>
+</div>
+<p class="text-on-surface-variant text-[13px]">Cotización con la lista de precios del local</p>
+</div>
+</div>
+<span class="text-on-surface-variant text-[13px] font-label-md">Emisión: 24/10/2026</span>
+</div>
+<!-- Client Selector Card -->
+<div class="bg-surface-container-lowest border border-outline rounded-lg p-space-md flex flex-col gap-space-sm">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">business</span>
+              Cliente
+            </label>
+<button class="text-primary hover:underline text-[13px] font-label-md flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[16px]">person_add</span>
+              Cambiar cliente
+            </button>
+</div>
+<div class="p-space-sm border border-outline rounded bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-bold">
+                HC
+              </div>
+<div>
+<span class="font-label-md text-on-surface block text-[15px]">Hotel Cordillera S.A.</span>
+<span class="text-on-surface-variant text-[12px] block">CUIT: 30-71555444-0 · Condición IVA: Resp. Inscripto</span>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-variant text-primary text-[11px] font-bold rounded uppercase">
+              Empresa
+            </span>
+</div>
+</div>
+<!-- Items Table Card -->
+<div class="bg-surface-container-lowest border border-outline rounded-lg p-space-md flex flex-col gap-space-sm">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">format_list_bulleted</span>
+              Renglones del presupuesto
+            </h3>
+<span class="text-on-surface-variant text-[12px]">3 renglones cargados</span>
+</div>
+<div class="border border-outline rounded overflow-hidden">
+<table class="w-full text-left border-collapse text-[14px]">
+<thead class="bg-surface-container-low border-b border-outline font-label-md text-on-surface-variant text-[12px] uppercase tracking-wider">
+<tr>
+<th class="py-2.5 px-3">Servicio / Prenda</th>
+<th class="py-2.5 px-3 text-center w-24">Cant.</th>
+<th class="py-2.5 px-3 text-right w-28">P. Unitario</th>
+<th class="py-2.5 px-3 text-right w-28">Subtotal</th>
+<th class="py-2.5 px-2 text-center w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline">
+<!-- Renglón 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-3">
+<span class="font-bold text-on-surface block">Sábana 2 plazas</span>
+<span class="text-[11px] text-on-surface-variant">Lavado industrial + planchado calandra</span>
+</td>
+<td class="py-2.5 px-3 text-center">
+<input class="w-16 text-center border border-outline rounded py-1 px-1 bg-surface text-on-surface font-label-md text-[13px] focus:outline-none focus:border-primary" type="number" value="120"/>
+</td>
+<td class="py-2.5 px-3 text-right font-body-md text-on-surface">
+                    $3.000
+                  </td>
+<td class="py-2.5 px-3 text-right font-bold text-on-surface">
+                    $360.000
+                  </td>
+<td class="py-2.5 px-2 text-center">
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Renglón 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-3">
+<span class="font-bold text-on-surface block">Toalla de baño</span>
+<span class="text-[11px] text-on-surface-variant">550 grs · Proceso desinfección térmica</span>
+</td>
+<td class="py-2.5 px-3 text-center">
+<input class="w-16 text-center border border-outline rounded py-1 px-1 bg-surface text-on-surface font-label-md text-[13px] focus:outline-none focus:border-primary" type="number" value="200"/>
+</td>
+<td class="py-2.5 px-3 text-right font-body-md text-on-surface">
+                    $1.200
+                  </td>
+<td class="py-2.5 px-3 text-right font-bold text-on-surface">
+                    $240.000
+                  </td>
+<td class="py-2.5 px-2 text-center">
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Renglón 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-3">
+<span class="font-bold text-on-surface block">Mantel institucional</span>
+<span class="text-[11px] text-on-surface-variant">Desmanchado específico + apresto ligero</span>
+</td>
+<td class="py-2.5 px-3 text-center">
+<input class="w-16 text-center border border-outline rounded py-1 px-1 bg-surface text-on-surface font-label-md text-[13px] focus:outline-none focus:border-primary" type="number" value="40"/>
+</td>
+<td class="py-2.5 px-3 text-right font-body-md text-on-surface">
+                    $4.000
+                  </td>
+<td class="py-2.5 px-3 text-right font-bold text-on-surface">
+                    $160.000
+                  </td>
+<td class="py-2.5 px-2 text-center">
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Add Item Action Button -->
+<div class="pt-1 flex items-center justify-between">
+<button class="flex items-center gap-1.5 text-primary hover:text-primary-container text-label-md font-label-md text-[13px] px-2 py-1.5 border border-dashed border-outline rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Agregar renglón de la lista de precios</span>
+</button>
+<span class="text-[12px] text-on-surface-variant">Precios netos sin impuestos</span>
+</div>
+</div>
+<!-- Commercial Terms Card -->
+<div class="bg-surface-container-lowest border border-outline rounded-lg p-space-md grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<label class="text-[12px] font-label-md text-on-surface-variant uppercase">Descuento aplicado</label>
+<div class="flex items-center gap-2">
+<div class="relative w-28">
+<input class="w-full border border-outline rounded p-2 text-on-surface font-label-md text-[14px] bg-surface focus:outline-none focus:border-primary" type="text" value="8%"/>
+</div>
+<span class="text-error font-label-md text-[13px]">-$60.800 (bonif. volumen)</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[12px] font-label-md text-on-surface-variant uppercase">Validez cotización</label>
+<select class="border border-outline rounded p-2 text-on-surface font-body-md text-[13px] bg-surface focus:outline-none focus:border-primary">
+<option selected="">15 días (hasta 08/11/2026)</option>
+<option>30 días (hasta 23/11/2026)</option>
+<option>7 días (hasta 31/10/2026)</option>
+</select>
+</div>
+<div class="col-span-2 flex flex-col gap-1">
+<label class="text-[12px] font-label-md text-on-surface-variant uppercase">Condición logística y notas</label>
+<input class="w-full border border-outline rounded p-2 text-on-surface font-body-md text-[13px] bg-surface focus:outline-none focus:border-primary" type="text" value="Retiro y entrega semanal a coordinar"/>
+</div>
+</div>
+<!-- Total Panel -->
+<div class="bg-surface-container-low border border-outline rounded-lg p-space-md flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] font-label-md tracking-wider text-on-surface-variant uppercase">TOTAL ESTIMADO</span>
+<div class="text-[34px] font-headline-md font-bold text-primary leading-none">
+              $699.200
+            </div>
+<span class="text-[12px] text-on-surface-variant mt-1">Precios expresados en pesos argentinos sin IVA · Factura A disponible</span>
+</div>
+<div class="text-right">
+<div class="text-[13px] text-on-surface-variant">Subtotal Bruto: <strong class="text-on-surface">$760.000</strong></div>
+<div class="text-[13px] text-error">Descuento (8%): <strong>-$60.800</strong></div>
+<div class="text-[11px] text-on-surface-variant mt-1">Cotización lista para emitir</div>
+</div>
+</div>
+</section>
+<!-- ==================== RIGHT COLUMN: A4 SHEET PREVIEW & ACTIONS ==================== -->
+<section class="col-span-12 xl:col-span-6 flex flex-col gap-space-md">
+<!-- Document Title / Status Bar -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">visibility</span>
+<span class="font-label-md text-[14px] text-on-surface">Vista previa de hoja membretada (A4)</span>
+</div>
+<span class="text-[12px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline">
+            Escala: 100% · Formato Impresión
+          </span>
+</div>
+<!-- A4 Sheet Container -->
+<div class="bg-surface-container-lowest border border-outline rounded p-8 flex flex-col justify-between min-h-[640px] shadow-none">
+<div class="flex flex-col gap-6">
+<!-- Header of Sheet -->
+<div class="flex justify-between items-start border-b border-outline pb-4">
+<!-- Company Brand Info -->
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 rounded bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[28px]">local_laundry_service</span>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md font-bold text-primary leading-tight">CLEANBOX</h2>
+<p class="text-[12px] font-label-md text-on-surface tracking-wider uppercase">Tintorería</p>
+<p class="text-[11px] text-on-surface-variant mt-0.5">Av. San Martín 1234, Mendoza · Tel: +54 9 261 555-0199</p>
+</div>
+</div>
+<!-- Quote Reference Box -->
+<div class="text-right flex flex-col items-end">
+<span class="px-2.5 py-1 bg-surface-variant text-primary font-bold text-[13px] rounded border border-outline">
+                  PRESUPUESTO N° P-0031
+                </span>
+<span class="text-[12px] text-on-surface-variant mt-1.5 block">Fecha de emisión: <strong>24/10/2026</strong></span>
+<span class="text-[12px] text-on-surface-variant block">Validez: <strong>Válido por 15 días</strong></span>
+</div>
+</div>
+<!-- Client Info Block -->
+<div class="p-3 bg-surface-container-low border border-outline rounded flex justify-between text-[13px]">
+<div>
+<span class="text-[11px] font-label-md uppercase text-on-surface-variant block">Datos del Cliente</span>
+<strong class="text-on-surface text-[14px]">Hotel Cordillera S.A.</strong>
+<p class="text-on-surface-variant text-[12px]">CUIT: 30-71555444-0 · Responsable Inscripto</p>
+</div>
+<div class="text-right">
+<span class="text-[11px] font-label-md uppercase text-on-surface-variant block">Referencia / Destino</span>
+<span class="text-on-surface font-label-md">Atención: Dpto. de Gobernanza / Compras</span>
+<p class="text-on-surface-variant text-[12px]">Mendoza Ciudad, CP 5500</p>
+</div>
+</div>
+<!-- Clean Formal Table of Items -->
+<div class="overflow-hidden border border-outline rounded">
+<table class="w-full text-left border-collapse text-[13px]">
+<thead class="bg-surface-container-high border-b border-outline text-on-surface-variant font-label-md text-[11px] uppercase tracking-wider">
+<tr>
+<th class="py-2 px-3">Descripción del Servicio</th>
+<th class="py-2 px-3 text-center w-16">Cant.</th>
+<th class="py-2 px-3 text-right w-24">P. Unit.</th>
+<th class="py-2 px-3 text-right w-28">Importe</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline text-on-surface">
+<tr>
+<td class="py-2.5 px-3">
+<span class="font-bold block">Sábana 2 plazas</span>
+<span class="text-[11px] text-on-surface-variant">Servicio regular con planchado calandra</span>
+</td>
+<td class="py-2.5 px-3 text-center">120</td>
+<td class="py-2.5 px-3 text-right">$3.000</td>
+<td class="py-2.5 px-3 text-right font-bold">$360.000</td>
+</tr>
+<tr>
+<td class="py-2.5 px-3">
+<span class="font-bold block">Toalla de baño</span>
+<span class="text-[11px] text-on-surface-variant">Proceso desinfección y secado suave</span>
+</td>
+<td class="py-2.5 px-3 text-center">200</td>
+<td class="py-2.5 px-3 text-right">$1.200</td>
+<td class="py-2.5 px-3 text-right font-bold">$240.000</td>
+</tr>
+<tr>
+<td class="py-2.5 px-3">
+<span class="font-bold block">Mantel institucional</span>
+<span class="text-[11px] text-on-surface-variant">Tratamiento quitamanchas mantelería</span>
+</td>
+<td class="py-2.5 px-3 text-center">40</td>
+<td class="py-2.5 px-3 text-right">$4.000</td>
+<td class="py-2.5 px-3 text-right font-bold">$160.000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Summary Table Alignment Right -->
+<div class="flex justify-end">
+<div class="w-64 flex flex-col gap-1.5 border border-outline rounded p-3 bg-surface-container-low text-[13px]">
+<div class="flex justify-between text-on-surface-variant">
+<span>Subtotal:</span>
+<span class="font-bold text-on-surface">$760.000</span>
+</div>
+<div class="flex justify-between text-error">
+<span>Descuento especial (8%):</span>
+<span class="font-bold">-$60.800</span>
+</div>
+<div class="border-t border-outline pt-1.5 flex justify-between items-center text-on-surface">
+<span class="font-bold text-[14px]">TOTAL FINAL:</span>
+<span class="text-headline-md font-headline-md font-bold text-primary leading-none">$699.200</span>
+</div>
+</div>
+</div>
+<!-- Document Notes -->
+<div class="bg-surface border-l-4 border-primary p-3 rounded-r text-[12px] text-on-surface-variant">
+<strong class="text-on-surface font-label-md">Nota:</strong> Retiro y entrega semanal a coordinar.
+            </div>
+</div>
+<!-- Letterhead Footer -->
+<div class="border-t border-outline pt-4 mt-6 text-center text-[11px] text-on-surface-variant flex flex-col gap-1">
+<p class="font-label-md text-on-surface">CLEANBOX Tintorería</p>
+<p>Av. San Martín 1234, Mendoza · Tel: +54 9 261 555-0199</p>
+
+</div>
+</div>
+<!-- Action Buttons Bar -->
+<div class="flex items-center justify-between gap-space-sm pt-1">
+<div class="flex items-center gap-space-xs">
+<!-- Descargar PDF -->
+<button class="flex items-center gap-1.5 px-space-md py-2 bg-surface-container-lowest border border-outline text-on-surface rounded-lg font-label-md text-[13px] hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Descargar PDF</span>
+</button>
+<!-- WhatsApp -->
+<button class="flex items-center gap-1.5 px-space-md py-2 bg-surface-container-lowest border border-outline text-on-surface rounded-lg font-label-md text-[13px] hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+<span>Enviar por WhatsApp</span>
+</button>
+<!-- Email -->
+<button class="flex items-center gap-1.5 px-space-md py-2 bg-surface-container-lowest border border-outline text-on-surface rounded-lg font-label-md text-[13px] hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+<span>Enviar por correo</span>
+</button>
+</div>
+<!-- Primary Submit Action -->
+<button class="flex items-center gap-2 px-space-lg py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">save</span>
+<span>Guardar presupuesto</span>
+</button>
+</div>
+</section>
+</main>
+</div>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background" lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ajustes · CLEANBOX Tintorería Mendoza</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;family=Outfit:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#005d79",
+            "background": "#f3f7f9",
+            "outline": "#b9c9d2",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffdcbe",
+            "surface-dim": "#d7dadd",
+            "primary-container": "#0f7799",
+            "on-surface-variant": "#3f484d",
+            "primary-fixed-dim": "#7fd1f6",
+            "error": "#b3261e",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed-variant": "#004d65",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e0e3e6",
+            "secondary": "#2a5ea6",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#181c1e",
+            "surface": "#fbfdfe",
+            "tertiary-container": "#9c601b",
+            "on-tertiary-fixed": "#2d1600",
+            "surface-container": "#ebeef1",
+            "outline-variant": "#bec8ce",
+            "on-secondary-fixed-variant": "#00468c",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#004286",
+            "on-primary-container": "#e3f5ff",
+            "inverse-on-surface": "#eef1f4",
+            "surface-container-low": "#f1f4f7",
+            "surface-variant": "#e0e3e6",
+            "on-primary-fixed": "#001f2a",
+            "surface-bright": "#f7fafd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006685",
+            "on-primary": "#f7fcfe",
+            "tertiary-fixed-dim": "#ffb872",
+            "secondary-container": "#83b1ff",
+            "on-background": "#181c1e",
+            "on-tertiary-container": "#ffefe3",
+            "secondary-fixed": "#d6e3ff",
+            "inverse-primary": "#7fd1f6",
+            "surface-container-high": "#e6e8eb",
+            "on-tertiary-fixed-variant": "#6a3c00",
+            "primary-fixed": "#bfe9ff",
+            "tertiary": "#c98a12",
+            "inverse-surface": "#2d3133"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "16px",
+            "space-xs": "4px",
+            "space-sm": "8px",
+            "space-xl": "40px",
+            "space-lg": "24px",
+            "space-md": "16px",
+            "margin": "24px"
+          },
+          "fontFamily": {
+            "headline-md": ["Outfit"],
+            "display": ["Outfit"],
+            "label-md": ["Atkinson Hyperlegible"],
+            "body-md": ["Atkinson Hyperlegible"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["15px", { "lineHeight": "20px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .ticket-sawtooth {
+      background: radial-gradient(circle, transparent, transparent 4px, #ffffff 4px, #ffffff );
+      background-size: 10px 10px;
+    }
+  </style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230f7799'/%3E%3C/svg%3E">
+</head>
+<body data-view="ajustes" class="h-full font-body-md text-on-surface antialiased bg-background">
+<div class="flex min-h-screen">
+<!-- 1. PANEL LATERAL IZQUIERDO (240px fijo) -->
+<aside class="w-[240px] h-screen flex flex-col justify-between bg-surface border-r border-outline shrink-0 z-40 select-none">
+<div class="flex flex-col">
+<div class="p-space-md border-b border-outline flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center border border-primary shrink-0 text-primary overflow-hidden" data-logo>
+<span class="material-symbols-outlined text-[24px]">dry_cleaning</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight leading-none">CLEANBOX</span>
+<span class="font-label-md text-[10px] tracking-widest text-on-surface-variant font-bold mt-1">TINTORERÍA</span>
+</div>
+</div>
+<nav aria-label="Navegación principal" class="p-space-md flex flex-col gap-1.5">
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="pedidos" href="index.html">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>Pedidos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="venta" href="venta.html">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+<span>Nueva venta</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="clientes" href="clientes.html">
+<span class="material-symbols-outlined text-[20px]">people</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="caja" href="caja.html">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>Caja</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="facturar" href="facturar.html">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span>Facturar</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="presupuestos" href="presupuestos.html">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+<span>Presupuestos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="precios" href="precios.html">
+<span class="material-symbols-outlined text-[20px]">sell</span>
+<span>Precios</span>
+</a>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<a class="flex items-center gap-space-sm bg-primary-container text-on-primary-container rounded-lg px-space-md py-space-sm font-label-md text-label-md active:scale-[0.98] transition-transform duration-100" data-nav="ajustes" href="ajustes.html">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-space-md border-t border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[26px]">account_circle</span>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-[13px] text-on-surface font-bold truncate" data-user-name>Hernán · Dueño</span>
+<span class="text-[11px] text-on-surface-variant" data-user-role>Administración</span>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-[0.95] transition-colors" data-switch-user title="Cambiar de usuario (demo)" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</aside>
+<!-- ÁREA DE CONTENIDO PRINCIPAL -->
+<main class="flex-1 min-h-screen flex flex-col bg-background">
+<!-- 2. ENCABEZADO SUPERIOR -->
+<header class="flex justify-between items-center w-full px-space-lg py-space-md bg-surface-container-lowest border-b border-outline sticky top-0 z-30">
+<div class="flex items-center gap-space-md">
+<h1 class="font-display text-display text-on-surface leading-tight">Ajustes</h1>
+
+<p class="hidden xl:block text-sm text-on-surface-variant pl-2 border-l border-outline">
+            Configuración general del local · Sólo visible para administración
+          </p>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="text-xs text-on-surface-variant italic hidden sm:inline">Demo con datos de ejemplo</span>
+<button class="inline-flex items-center gap-2 bg-primary hover:bg-on-primary-fixed-variant text-on-primary px-space-lg py-2.5 rounded-lg font-label-md text-label-md active:scale-[0.98] transition-[color,background-color,border-color,transform]" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+            Guardar cambios
+          </button>
+</div>
+</header>
+<!-- Subnavegación horizontal con anclas rápidas -->
+<div class="bg-surface border-b border-outline px-space-lg py-2 flex items-center gap-space-lg text-sm font-label-md">
+<a class="text-primary border-b-2 border-primary pb-1 font-bold flex items-center gap-1.5" href="#modulos">
+<span class="material-symbols-outlined text-[18px]">toggle_on</span> Módulos del sistema
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface pb-1 flex items-center gap-1.5" href="#ticket">
+<span class="material-symbols-outlined text-[18px]">receipt</span> Ticket y remito térmico
+        </a>
+<a class="text-on-surface-variant hover:text-on-surface pb-1 flex items-center gap-1.5" href="#usuarios">
+<span class="material-symbols-outlined text-[18px]">group</span> Usuarios y permisos
+        </a>
+</div>
+<!-- Contenedor de Secciones -->
+<div class="p-space-lg flex flex-col gap-space-xl max-w-7xl">
+<!-- 3.A SECCIÓN: MÓDULOS DEL SISTEMA -->
+<section class="flex flex-col gap-space-sm scroll-mt-28" id="modulos">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">view_quilt</span>
+              Módulos del sistema
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Apagá las pantallas que no usás. Desaparecen del menú para todos; los datos no se borran y podés volver a encenderlas.
+            </p>
+</div>
+<div class="bg-surface rounded-lg border border-outline divide-y divide-outline">
+<!-- Grupo: Modulares configurables -->
+<div class="p-4 bg-surface-container-low flex items-center justify-between">
+<span class="text-xs uppercase tracking-wider font-bold text-on-surface-variant">Módulos Opcionales de Negocio</span>
+<span class="text-xs text-on-surface-variant">Se aplica al instante</span>
+</div>
+<!-- Fila: Clientes -->
+<div class="p-space-md flex items-center justify-between hover:bg-surface-bright transition-colors">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">people</span>
+</div>
+<div>
+<h3 class="font-label-md text-base text-on-surface">Clientes</h3>
+<p class="text-sm text-on-surface-variant">Empresas y particulares, con su historial de pedidos.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-[color,background-color,border-color,transform] peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Fila: Facturar -->
+<div class="p-space-md flex items-center justify-between hover:bg-surface-bright transition-colors">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<h3 class="font-label-md text-base text-on-surface">Facturar</h3>
+<p class="text-sm text-on-surface-variant">Factura A con ARCA para bodegas y empresas.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-[color,background-color,border-color,transform] peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Fila: Presupuestos (Inactivo) -->
+<div class="p-space-md flex items-center justify-between hover:bg-surface-bright transition-colors">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">request_quote</span>
+</div>
+<div>
+<h3 class="font-label-md text-base text-on-surface">Presupuestos</h3>
+<p class="text-sm text-on-surface-variant">Cotización de prendas especiales, teñidos y cortinados antes del ingreso a planta.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-[color,background-color,border-color,transform] peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Fila: Precios -->
+<div class="p-space-md flex items-center justify-between hover:bg-surface-bright transition-colors">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">sell</span>
+</div>
+<div>
+<h3 class="font-label-md text-base text-on-surface">Precios</h3>
+<p class="text-sm text-on-surface-variant">Lista de precios por prenda o servicio.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-[color,background-color,border-color,transform] peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Subsección: Esenciales del mostrador (bloqueados) -->
+<div class="p-4 bg-surface-container-low flex items-center justify-between border-t border-outline">
+<span class="text-xs uppercase tracking-wider font-bold text-on-surface-variant">Módulos esenciales del mostrador</span>
+<span class="text-xs text-on-surface-variant">No desactivables</span>
+</div>
+<!-- Pedidos -->
+<div class="p-space-md flex items-center justify-between bg-surface-bright">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-label-md text-base text-on-surface">Pedidos</h3>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
+</div>
+<p class="text-sm text-on-surface-variant">Recepción, preparación y entrega de pedidos.</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant font-label-md text-xs rounded-full border border-outline">
+                Siempre activo
+              </span>
+</div>
+<!-- Nueva venta -->
+<div class="p-space-md flex items-center justify-between bg-surface-bright">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-label-md text-base text-on-surface">Nueva venta</h3>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
+</div>
+<p class="text-sm text-on-surface-variant">Cobro en dos clics con ticket.</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant font-label-md text-xs rounded-full border border-outline">
+                Siempre activo
+              </span>
+</div>
+<!-- Caja -->
+<div class="p-space-md flex items-center justify-between bg-surface-bright">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">point_of_sale</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-label-md text-base text-on-surface">Caja</h3>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
+</div>
+<p class="text-sm text-on-surface-variant">Totales por medio de pago y cierre del turno.</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant font-label-md text-xs rounded-full border border-outline">
+                Siempre activo
+              </span>
+</div>
+<!-- Ajustes -->
+<div class="p-space-md flex items-center justify-between bg-surface-bright">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-label-md text-base text-on-surface">Ajustes</h3>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">lock</span>
+</div>
+<p class="text-sm text-on-surface-variant">Panel de dueño, parámetros fiscales e impresoras de mostrador.</p>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant font-label-md text-xs rounded-full border border-outline">
+                Siempre activo
+              </span>
+</div>
+</div>
+</section>
+<!-- 3.B SECCIÓN: TICKET Y REMITO -->
+<section class="flex flex-col gap-space-sm scroll-mt-28" id="ticket">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">receipt</span>
+              Ticket y remito
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Personalizá el comprobante térmico que sale por la impresora de mostrador.
+            </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Columna Izquierda: Formulario de configuración -->
+<div class="lg:col-span-7 bg-surface p-space-lg rounded-lg border border-outline flex flex-col gap-space-md">
+<h3 class="font-label-md text-base text-on-surface pb-2 border-b border-outline">Datos de Cabecera y Parámetros</h3>
+<!-- Subir Logo -->
+<div class="flex flex-col gap-2">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant">Logotipo impreso en cabecera</label>
+<div class="flex items-center gap-space-md p-3 border border-outline rounded-lg bg-surface-container-low">
+<div class="w-14 h-14 bg-surface rounded border border-outline flex items-center justify-center p-2">
+<span class="material-symbols-outlined text-3xl text-primary">local_laundry_service</span>
+</div>
+<div class="flex-1">
+<span class="font-label-md text-sm text-on-surface block">logo_cleanbox_monocromo.png</span>
+<span class="text-xs text-on-surface-variant">Optimizado en 1 bit monocromo para impresión térmica nítida.</span>
+</div>
+<button class="px-3 py-1.5 text-xs font-label-md bg-surface border border-outline rounded hover:bg-surface-container text-on-surface transition-colors" type="button">
+                    Cambiar imagen PNG/JPG
+                  </button>
+</div>
+</div>
+<!-- Inputs -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant" for="nombreNegocio">Nombre del negocio</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" id="nombreNegocio" type="text" value="CLEANBOX Tintorería"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant" for="telefonoNegocio">Teléfono / WhatsApp</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" id="telefonoNegocio" type="text" value="+54 9 261 555-0199"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant" for="direccionNegocio">Dirección del local</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" id="direccionNegocio" type="text" value="Av. San Martín 1234, Mendoza"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant" for="textoPie">Texto al pie (Cláusula de retiro)</label>
+<textarea class="w-full bg-surface border border-outline rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" id="textoPie" rows="2">Por favor retire sus prendas dentro de los 30 días con este comprobante.</textarea>
+</div>
+<div class="h-[1px] bg-outline my-1"></div>
+<!-- Switches y selects -->
+<div class="flex items-center justify-between py-1">
+<div>
+<span class="font-label-md text-sm text-on-surface block">Imprimir por duplicado (cliente y empresa)</span>
+<span class="text-xs text-on-surface-variant">Una copia para el cliente y otra para el local.</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-[color,background-color,border-color,transform] peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex flex-col gap-1 pt-2">
+<label class="text-xs uppercase tracking-wider font-bold text-on-surface-variant" for="anchoPapel">Ancho del papel térmico</label>
+<select class="w-full bg-surface border border-outline rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" id="anchoPapel">
+<option selected="">Ancho del papel: 80 mm (térmico estándar)</option>
+<option>Ancho del papel: 58 mm (térmico compacto POS)</option>
+</select>
+</div>
+<div class="pt-2 flex justify-end">
+<button class="text-xs font-label-md text-primary flex items-center gap-1 hover:underline" type="button">
+<span class="material-symbols-outlined text-[16px]">print</span>
+                  Imprimir ticket de prueba en mostrador
+                </button>
+</div>
+</div>
+<!-- Columna Derecha: Vista previa en vivo del ticket térmico (80 mm) -->
+<div class="lg:col-span-5 flex flex-col items-center">
+<div class="w-full max-w-[320px] bg-surface-container-low p-4 rounded-lg border border-outline flex flex-col items-center">
+<div class="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">visibility</span>
+                  Previsualización 80mm
+                </div>
+<!-- Papel de ticket -->
+<div class="w-[280px] bg-surface-container-lowest border border-outline shadow-none p-4 font-mono text-[11px] leading-tight text-on-surface flex flex-col relative select-none">
+<!-- Dientes de corte superior -->
+<div class="w-full border-b border-dashed border-outline-variant pb-2 mb-2 text-center text-on-surface-variant text-[10px]">
+                    ✄ ---------------- CORTE SUPERIOR ----------------
+                  </div>
+<!-- Encabezado de Ticket -->
+<div class="text-center flex flex-col items-center mb-2">
+<span class="material-symbols-outlined text-2xl text-on-surface">local_laundry_service</span>
+<span class="font-bold text-sm tracking-widest font-headline-md">CLEANBOX</span>
+<span class="text-[10px] tracking-wider uppercase font-semibold">TINTORERÍA</span>
+<p class="text-[10px] text-on-surface-variant mt-1 leading-none">Av. San Martín 1234, Mendoza</p>
+<p class="text-[10px] text-on-surface-variant">Tel: 261 555-0199</p>
+</div>
+<div class="text-center text-on-surface-variant my-1">--------------------------------</div>
+<div class="flex justify-between font-bold text-[12px]">
+<span>TICKET N° T-0413</span>
+<span>TALÓN #1</span>
+</div>
+<div>Fecha: 24/10/2026 - 10:05 hs</div>
+<div class="truncate">Cliente: Bodega Cerro Negro</div>
+<div class="text-[10px] text-on-surface-variant">CUIT: 30-71234567-8</div>
+<div class="text-center text-on-surface-variant my-1">--------------------------------</div>
+<!-- Detalle de Prendas -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between">
+<span>5 Bolsas lavado inst.</span>
+<span class="font-bold">$32.500</span>
+</div>
+<div class="flex justify-between">
+<span>2 Manteles blancos</span>
+<span class="font-bold">$8.000</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Descuento inst. (10%)</span>
+<span>-$4.050</span>
+</div>
+</div>
+<div class="text-center text-on-surface my-1 font-bold">================================</div>
+<!-- Total -->
+<div class="flex justify-between items-baseline py-1">
+<span class="font-bold text-xs uppercase">TOTAL:</span>
+<span class="font-bold text-base font-headline-md">$36.450</span>
+</div>
+<div class="text-[10px] mt-1">Medio de pago: Transferencia bancaria</div>
+<div class="text-[10px] font-bold">Fecha pactada entrega: Jue 24/10</div>
+<div class="text-center text-on-surface-variant my-1">--------------------------------</div>
+<!-- Pie del Ticket -->
+<div class="text-[9px] text-center text-on-surface-variant italic mb-2">
+                    Por favor retire sus prendas dentro de los 30 días con este comprobante.
+                  </div>
+<div class="bg-surface-container py-1 text-center font-bold text-[10px] tracking-wider mb-2 border border-outline">
+                    ORIGINAL CLIENTE
+                  </div>
+<div class="text-[9px] text-center text-on-surface-variant uppercase mb-2">
+                    Documento no válido como factura
+                  </div>
+<!-- Código de barras simulado -->
+<div class="flex flex-col items-center gap-1 pt-1 border-t border-dashed border-outline-variant">
+<div class="h-8 w-44 flex items-center justify-between px-1 bg-surface-container-low border border-outline-variant">
+<div class="w-1 h-6 bg-on-surface"></div>
+<div class="w-0.5 h-6 bg-on-surface"></div>
+<div class="w-1.5 h-6 bg-on-surface"></div>
+<div class="w-0.5 h-6 bg-on-surface"></div>
+<div class="w-2 h-6 bg-on-surface"></div>
+<div class="w-0.5 h-6 bg-on-surface"></div>
+<div class="w-1 h-6 bg-on-surface"></div>
+<div class="w-2 h-6 bg-on-surface"></div>
+<div class="w-0.5 h-6 bg-on-surface"></div>
+<div class="w-1.5 h-6 bg-on-surface"></div>
+<div class="w-1 h-6 bg-on-surface"></div>
+<div class="w-0.5 h-6 bg-on-surface"></div>
+<div class="w-2 h-6 bg-on-surface"></div>
+</div>
+<span class="text-[9px] tracking-widest text-on-surface-variant">00413-24102026-MZA</span>
+</div>
+<!-- Dientes de corte inferior -->
+<div class="w-full border-t border-dashed border-outline-variant pt-2 mt-2 text-center text-on-surface-variant text-[10px]">
+                    ✄ ---------------- FIN DE CORTE ----------------
+                  </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3.C SECCIÓN: USUARIOS Y PERMISOS -->
+<section class="flex flex-col gap-space-sm scroll-mt-28 mb-12" id="usuarios">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">group</span>
+                Usuarios y permisos del equipo
+              </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                Personal con acceso al sistema y roles de mostrador.
+              </p>
+</div>
+<button class="inline-flex items-center gap-1.5 bg-surface border border-outline hover:bg-surface-container text-on-surface px-4 py-2 rounded-lg font-label-md text-sm active:scale-[0.98] transition-[color,background-color,border-color,transform] self-start sm:self-auto" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">person_add</span>
+              + Invitar usuario
+            </button>
+</div>
+<div class="bg-surface rounded-lg border border-outline overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline text-xs uppercase font-bold text-on-surface-variant">
+<th class="py-3 px-space-md">Usuario</th>
+<th class="py-3 px-space-md">Rol asignado</th>
+<th class="py-3 px-space-md">Alcance de permisos</th>
+<th class="py-3 px-space-md text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline text-sm">
+<!-- Usuario: Hernán -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-sm shrink-0">
+                          H
+                        </div>
+<div>
+<div class="font-bold text-on-surface font-label-md">Hernán</div>
+<div class="text-xs text-on-surface-variant">Usuario: hernan</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold font-label-md bg-primary-container text-on-primary-container border border-outline">
+                        Dueño
+                      </span>
+</td>
+<td class="py-3.5 px-space-md text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+<span>Acceso total (todo el sistema, caja y facturación)</span>
+</div>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Ver registro de auditoría">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Configurar credenciales">
+<span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Usuario: Marta -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0">
+                          M
+                        </div>
+<div>
+<div class="font-bold text-on-surface font-label-md">Marta</div>
+<div class="text-xs text-on-surface-variant">Usuario: marta · Turno mañana</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline">
+                        Mostrador
+                      </span>
+</td>
+<td class="py-3.5 px-space-md text-on-surface">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+<span>Atención, pedidos y cobro (sin facturar)</span>
+</div>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Ver actividad">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Editar usuario">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Usuario: Sofía -->
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="py-3.5 px-space-md">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0">
+                          S
+                        </div>
+<div>
+<div class="font-bold text-on-surface font-label-md">Sofía</div>
+<div class="text-xs text-on-surface-variant">Usuario: sofia · Turno tarde</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-space-md">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline">
+                        Mostrador
+                      </span>
+</td>
+<td class="py-3.5 px-space-md text-on-surface">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+<span>Atención, pedidos y cobro (sin facturar)</span>
+</div>
+</td>
+<td class="py-3.5 px-space-md text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Ver actividad">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded hover:bg-surface-container transition-colors" title="Editar usuario">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pie de tabla informativo -->
+<div class="p-space-md bg-surface-container-low border-t border-outline flex flex-col sm:flex-row sm:items-center justify-between text-xs text-on-surface-variant gap-2">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                Las empleadas no facturan ni cambian la lista de precios.
+              </span>
+
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CLEANBOX Tintorería - Caja</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;family=Outfit:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom theme config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#005d79",
+            "background": "#f3f7f9",
+            "outline": "#b9c9d2",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffdcbe",
+            "surface-dim": "#d7dadd",
+            "primary-container": "#0f7799",
+            "on-surface-variant": "#3f484d",
+            "primary-fixed-dim": "#7fd1f6",
+            "error": "#b3261e",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed-variant": "#004d65",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e0e3e6",
+            "secondary": "#2a5ea6",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#181c1e",
+            "surface": "#fbfdfe",
+            "tertiary-container": "#9c601b",
+            "on-tertiary-fixed": "#2d1600",
+            "surface-container": "#ebeef1",
+            "outline-variant": "#bec8ce",
+            "on-secondary-fixed-variant": "#00468c",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#004286",
+            "on-primary-container": "#e3f5ff",
+            "inverse-on-surface": "#eef1f4",
+            "surface-container-low": "#f1f4f7",
+            "surface-variant": "#e0e3e6",
+            "on-primary-fixed": "#001f2a",
+            "surface-bright": "#f7fafd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006685",
+            "on-primary": "#f7fcfe",
+            "tertiary-fixed-dim": "#ffb872",
+            "secondary-container": "#83b1ff",
+            "on-background": "#181c1e",
+            "on-tertiary-container": "#ffefe3",
+            "secondary-fixed": "#d6e3ff",
+            "inverse-primary": "#7fd1f6",
+            "surface-container-high": "#e6e8eb",
+            "on-tertiary-fixed-variant": "#6a3c00",
+            "primary-fixed": "#bfe9ff",
+            "tertiary": "#c98a12",
+            "inverse-surface": "#2d3133"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "16px",
+            "space-xs": "4px",
+            "space-sm": "8px",
+            "space-xl": "40px",
+            "space-lg": "24px",
+            "space-md": "16px",
+            "margin": "24px"
+          },
+          "fontFamily": {
+            "headline-md": ["Outfit"],
+            "display": ["Outfit"],
+            "label-md": ["Atkinson Hyperlegible"],
+            "body-md": ["Atkinson Hyperlegible"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["15px", { "lineHeight": "20px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+    }
+  </style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230f7799'/%3E%3C/svg%3E">
+</head>
+<body data-view="caja" class="bg-background text-on-surface font-body-md text-body-md h-full flex overflow-hidden antialiased">
+<!-- Side Navigation Bar (Fixed left 240px, anchored from Shared Components) -->
+<aside class="w-[240px] h-screen flex flex-col justify-between bg-surface border-r border-outline shrink-0 z-40 select-none">
+<div class="flex flex-col">
+<div class="p-space-md border-b border-outline flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center border border-primary shrink-0 text-primary overflow-hidden" data-logo>
+<span class="material-symbols-outlined text-[24px]">dry_cleaning</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight leading-none">CLEANBOX</span>
+<span class="font-label-md text-[10px] tracking-widest text-on-surface-variant font-bold mt-1">TINTORERÍA</span>
+</div>
+</div>
+<nav aria-label="Navegación principal" class="p-space-md flex flex-col gap-1.5">
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="pedidos" href="index.html">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>Pedidos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="venta" href="venta.html">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+<span>Nueva venta</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="clientes" href="clientes.html">
+<span class="material-symbols-outlined text-[20px]">people</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center gap-space-sm bg-primary-container text-on-primary-container rounded-lg px-space-md py-space-sm font-label-md text-label-md active:scale-[0.98] transition-transform duration-100" data-nav="caja" href="caja.html">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>Caja</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="facturar" href="facturar.html">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span>Facturar</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="presupuestos" href="presupuestos.html">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+<span>Presupuestos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="precios" href="precios.html">
+<span class="material-symbols-outlined text-[20px]">sell</span>
+<span>Precios</span>
+</a>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="ajustes" href="ajustes.html">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-space-md border-t border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[26px]">account_circle</span>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-[13px] text-on-surface font-bold truncate" data-user-name>Hernán · Dueño</span>
+<span class="text-[11px] text-on-surface-variant" data-user-role>Administración</span>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-[0.95] transition-colors" data-switch-user title="Cambiar de usuario (demo)" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto bg-background">
+<!-- Top Area Header -->
+<header class="bg-surface-container-lowest border-b border-outline px-space-lg py-space-md sticky top-0 z-20 flex justify-between items-center">
+<div class="flex items-center gap-space-md">
+<div>
+<div class="flex items-center gap-space-sm">
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface">Caja</h1>
+
+</div>
+<p class="text-[13px] text-on-surface-variant font-body-md mt-0.5">
+            Jueves 24/10/2026 · Turno mañana
+          </p>
+</div>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-space-md">
+<button class="px-space-md py-space-sm bg-surface-container-low text-on-surface-variant font-label-md text-label-md rounded-lg border border-outline hover:bg-surface-container active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">history</span>
+          Historial de cierres
+        </button>
+<button class="px-space-lg py-space-sm bg-primary-container text-on-primary font-label-md text-label-md rounded-lg border border-primary hover:bg-primary active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+          Cerrar caja
+        </button>
+</div>
+</header>
+<!-- Page Body Grid Layout -->
+<div class="p-space-lg space-y-space-lg max-w-[1400px]">
+<!-- 1. Resumen por medio de pago (Cards flat con borde fino) -->
+<section>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<!-- Card: Efectivo -->
+<div class="bg-surface rounded-lg border border-outline p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md text-label-md">Efectivo</span>
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</span>
+</div>
+<div class="mt-space-md">
+<span class="text-headline-md font-headline-md text-on-surface tracking-tight">$48.500</span>
+<p class="text-[13px] text-on-surface-variant mt-1">2 cobros registrados</p>
+</div>
+</div>
+<!-- Card: Transferencia -->
+<div class="bg-surface rounded-lg border border-outline p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md text-label-md">Transferencia</span>
+<span class="w-8 h-8 rounded-lg bg-secondary-fixed/50 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</span>
+</div>
+<div class="mt-space-md">
+<span class="text-headline-md font-headline-md text-on-surface tracking-tight">$104.450</span>
+<p class="text-[13px] text-on-surface-variant mt-1">2 cobros directos</p>
+</div>
+</div>
+<!-- Card: Mercado Pago -->
+<div class="bg-surface rounded-lg border border-outline p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md text-label-md">Mercado Pago</span>
+<span class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">qr_code_2</span>
+</span>
+</div>
+<div class="mt-space-md">
+<span class="text-headline-md font-headline-md text-on-surface tracking-tight">$21.000</span>
+<p class="text-[13px] text-on-surface-variant mt-1">2 cobros vía QR</p>
+</div>
+</div>
+<!-- Card Destacada: Total del Turno -->
+<div class="bg-surface-container-lowest rounded-lg border-2 border-primary-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-primary font-label-md text-label-md">Total del turno</span>
+<span class="px-2 py-0.5 rounded-lg bg-primary-container text-on-primary text-[12px] font-label-md">
+                6 ventas
+              </span>
+</div>
+<div class="mt-space-md">
+<span class="text-display font-display text-primary tracking-tight leading-none">$173.950</span>
+<p class="text-[13px] text-on-surface-variant mt-1">Arqueo en curso</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Panel: Verificar efectivo (Arqueo rápido de mostrador) -->
+<section class="bg-surface rounded-lg border border-outline p-space-lg">
+<div class="flex items-center justify-between pb-space-md border-b border-outline mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary">balance</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">Verificar efectivo</h2>
+</div>
+<span class="text-[13px] text-on-surface-variant font-body-md">
+            Monto esperado según sistema: <strong class="text-on-surface font-label-md">$48.500</strong>
+</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-md items-end">
+<!-- Input Contado en Caja -->
+<div class="md:col-span-4 flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface flex items-center justify-between">
+<span>Efectivo contado en caja</span>
+<span class="text-[12px] text-on-surface-variant font-normal">Arqueo manual</span>
+</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-headline-md font-semibold text-lg">$</span>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 pl-8 pr-3 font-headline-md text-lg text-on-surface font-semibold focus:outline-none focus:border-primary transition-colors" type="text" value="48.000"/>
+</div>
+</div>
+<!-- Indicador de Diferencia -->
+<div class="md:col-span-3 flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface">Resultado del balance</label>
+<div class="flex items-center justify-between h-[46px] px-space-md bg-error-container/60 border border-error/30 rounded-lg">
+<span class="text-[13px] font-label-md text-on-surface">Diferencia</span>
+<span class="font-headline-md font-bold text-error text-[18px]">−$500</span>
+</div>
+</div>
+<!-- Campo de Nota / Observación -->
+<div class="md:col-span-5 flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface flex items-center justify-between">
+<span>Motivo de la diferencia</span>
+<span class="text-[12px] text-on-surface-variant font-normal">Obligatorio si existe desvío</span>
+</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg py-2.5 px-3 font-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors text-sm" placeholder="Ej: vuelto redondeado o retiro de cambio" type="text" value="Vuelto redondeado ticket T-0412"/>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between text-[13px] text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">info</span>
+<span>La diferencia quedará asentada en el informe de cierre de Marta para la administración.</span>
+</div>
+<button class="text-primary font-label-md hover:underline active:scale-[0.98] transition-[color,background-color,border-color,transform]">
+            Recalcular recuento
+          </button>
+</div>
+</section>
+<!-- 3. Movimientos del Turno (Tabla limpia, filas exactas) -->
+<section class="bg-surface rounded-lg border border-outline overflow-hidden">
+<!-- Header de la sección de movimientos -->
+<div class="p-space-md border-b border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-space-sm">
+<h2 class="text-headline-md font-headline-md text-on-surface">Movimientos del turno</h2>
+<span class="text-[13px] text-on-surface-variant font-body-md">· 6 registros ordenados cronológicamente</span>
+</div>
+<button class="px-space-md py-1.5 bg-surface rounded-lg border border-outline text-on-surface font-label-md text-label-md hover:bg-surface-container-low active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">remove_circle_outline</span>
+            Agregar retiro o gasto
+          </button>
+</div>
+<!-- Tabla estructurada sin degradados ni sombras -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline text-on-surface-variant font-label-md text-[13px]">
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider">Hora</th>
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider">N° de ticket</th>
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider">Cliente</th>
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider">Medio de pago</th>
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider text-right">Importe</th>
+<th class="py-space-sm px-space-md font-bold uppercase tracking-wider text-center w-16">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline">
+<!-- Fila 1: 09:20 | T-0412 | Carla Sosa | Efectivo | $14.500 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">09:20</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0412</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Carla Sosa</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-container-highest text-on-surface-variant font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed-variant"></span>
+                    Efectivo
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $14.500
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver detalle de pedido">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+<!-- Fila 2: 10:05 | T-0413 | Bodega Cerro Negro | Transferencia | $36.450 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">10:05</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0413</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Bodega Cerro Negro</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-secondary-fixed/50 text-secondary font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Transferencia
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $36.450
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver comprobante bancario">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+<!-- Fila 3: 11:40 | T-0414 | Martín Gómez | Mercado Pago | $9.500 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">11:40</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0414</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Martín Gómez</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-primary font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Mercado Pago
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $9.500
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+<!-- Fila 4: 12:10 | T-0415 | Hotel Cordillera | Transferencia | $68.000 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">12:10</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0415</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Hotel Cordillera</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-secondary-fixed/50 text-secondary font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Transferencia
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $68.000
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver comprobante bancario">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+<!-- Fila 5: 12:45 | T-0416 | Lucía Ferreyra | Efectivo | $34.000 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">12:45</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0416</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Lucía Ferreyra</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-container-highest text-on-surface-variant font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed-variant"></span>
+                    Efectivo
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $34.000
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+<!-- Fila 6: 13:30 | T-0417 | Particular | Mercado Pago | $11.500 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-space-sm px-space-md font-body-md text-on-surface-variant whitespace-nowrap">13:30</td>
+<td class="py-space-sm px-space-md font-label-md text-primary font-bold whitespace-nowrap">
+<span class="hover:underline cursor-pointer">T-0417</span>
+</td>
+<td class="py-space-sm px-space-md font-body-md text-on-surface">Particular</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-primary font-label-md text-[12px] px-2.5 py-0.5 rounded-lg border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Mercado Pago
+                  </span>
+</td>
+<td class="py-space-sm px-space-md font-headline-md font-semibold text-on-surface text-right whitespace-nowrap">
+                  $11.500
+                </td>
+<td class="py-space-sm px-space-md text-center text-on-surface-variant">
+<button class="p-1 hover:text-primary transition-colors" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</td>
+</tr>
+</tbody>
+<tfoot class="bg-surface-container-low border-t border-outline font-label-md">
+<tr>
+<td class="py-space-sm px-space-md text-on-surface font-bold" colspan="4">
+                  Suma total de cobros del turno
+                </td>
+<td class="py-space-sm px-space-md font-headline-md font-bold text-primary text-right whitespace-nowrap">
+                  $173.950
+                </td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+<!-- Footer de tabla con paginación y exportación -->
+<div class="px-space-md py-space-sm bg-surface flex items-center justify-between border-t border-outline text-[13px] text-on-surface-variant">
+<span>Mostrando 6 de 6 operaciones del turno activo</span>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">print</span>
+              Imprimir planilla de caja
+            </button>
+<span>·</span>
+<button class="flex items-center gap-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">download</span>
+              Exportar reporte (.csv)
+            </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<script src="app.js"></script>
+</body></html>

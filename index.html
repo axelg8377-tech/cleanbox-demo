@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pedidos | CLEANBOX Tintorería Mendoza</title>
+<!-- Google Fonts: Outfit & Atkinson Hyperlegible -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#005d79",
+            "background": "#f3f7f9",
+            "outline": "#b9c9d2",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffdcbe",
+            "surface-dim": "#d7dadd",
+            "primary-container": "#0f7799",
+            "on-surface-variant": "#3f484d",
+            "primary-fixed-dim": "#7fd1f6",
+            "error": "#b3261e",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed-variant": "#004d65",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e0e3e6",
+            "secondary": "#2a5ea6",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#181c1e",
+            "surface": "#fbfdfe",
+            "tertiary-container": "#9c601b",
+            "on-tertiary-fixed": "#2d1600",
+            "surface-container": "#ebeef1",
+            "outline-variant": "#bec8ce",
+            "on-secondary-fixed-variant": "#00468c",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#004286",
+            "on-primary-container": "#e3f5ff",
+            "inverse-on-surface": "#eef1f4",
+            "surface-container-low": "#f1f4f7",
+            "surface-variant": "#e0e3e6",
+            "on-primary-fixed": "#001f2a",
+            "surface-bright": "#f7fafd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006685",
+            "on-primary": "#f7fcfe",
+            "tertiary-fixed-dim": "#ffb872",
+            "secondary-container": "#83b1ff",
+            "on-background": "#181c1e",
+            "on-tertiary-container": "#ffefe3",
+            "secondary-fixed": "#d6e3ff",
+            "inverse-primary": "#7fd1f6",
+            "surface-container-high": "#e6e8eb",
+            "on-tertiary-fixed-variant": "#6a3c00",
+            "primary-fixed": "#bfe9ff",
+            "tertiary": "#c98a12",
+            "inverse-surface": "#2d3133"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "16px",
+            "space-xs": "4px",
+            "space-sm": "8px",
+            "space-xl": "40px",
+            "space-lg": "24px",
+            "space-md": "16px",
+            "margin": "24px"
+          },
+          "fontFamily": {
+            "headline-md": ["Outfit"],
+            "display": ["Outfit"],
+            "label-md": ["Atkinson Hyperlegible"],
+            "body-md": ["Atkinson Hyperlegible"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["15px", { "lineHeight": "20px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230f7799'/%3E%3C/svg%3E">
+</head>
+<body data-view="pedidos" class="bg-background text-on-background font-body-md text-body-md antialiased h-full flex overflow-hidden">
+<!-- Side Navigation Bar (Fixed 240px) -->
+<aside class="w-[240px] h-screen flex flex-col justify-between bg-surface border-r border-outline shrink-0 z-40 select-none">
+<div class="flex flex-col">
+<div class="p-space-md border-b border-outline flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center border border-primary shrink-0 text-primary overflow-hidden" data-logo>
+<span class="material-symbols-outlined text-[24px]">dry_cleaning</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight leading-none">CLEANBOX</span>
+<span class="font-label-md text-[10px] tracking-widest text-on-surface-variant font-bold mt-1">TINTORERÍA</span>
+</div>
+</div>
+<nav aria-label="Navegación principal" class="p-space-md flex flex-col gap-1.5">
+<a class="flex items-center gap-space-sm bg-primary-container text-on-primary-container rounded-lg px-space-md py-space-sm font-label-md text-label-md active:scale-[0.98] transition-transform duration-100" data-nav="pedidos" href="index.html">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>Pedidos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="venta" href="venta.html">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+<span>Nueva venta</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="clientes" href="clientes.html">
+<span class="material-symbols-outlined text-[20px]">people</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="caja" href="caja.html">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>Caja</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="facturar" href="facturar.html">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span>Facturar</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="presupuestos" href="presupuestos.html">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+<span>Presupuestos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="precios" href="precios.html">
+<span class="material-symbols-outlined text-[20px]">sell</span>
+<span>Precios</span>
+</a>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="ajustes" href="ajustes.html">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-space-md border-t border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[26px]">account_circle</span>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-[13px] text-on-surface font-bold truncate" data-user-name>Hernán · Dueño</span>
+<span class="text-[11px] text-on-surface-variant" data-user-role>Administración</span>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-[0.95] transition-colors" data-switch-user title="Cambiar de usuario (demo)" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas (Desktop 1280px optimized) -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-background">
+<!-- Top Action Bar / Header -->
+<header class="w-full px-space-lg py-space-md bg-surface border-b border-outline flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<h1 class="font-display text-display text-on-surface font-bold tracking-tight">Pedidos</h1>
+
+</div>
+<!-- Action Button -->
+<div class="flex items-center gap-3">
+<button class="bg-primary-container hover:bg-primary text-on-primary-container font-label-md text-label-md px-space-md py-2 rounded-lg flex items-center gap-2 active:scale-[0.98] transition-[color,background-color,border-color,transform]" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Recibir pedido</span>
+</button>
+</div>
+</header>
+<!-- Sub-header Filter Tabs Bar -->
+<div class="w-full px-space-lg bg-surface border-b border-outline flex items-center gap-space-lg shrink-0 pt-2">
+<button class="border-b-2 border-primary text-primary pb-space-sm font-label-md text-label-md transition-colors" type="button">
+        Todos (7)
+      </button>
+<button class="text-on-surface-variant pb-space-sm font-label-md text-label-md hover:text-on-surface transition-colors flex items-center gap-1.5" type="button">
+<span>Se entrega hoy</span>
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+</button>
+<button class="text-on-surface-variant pb-space-sm font-label-md text-label-md hover:text-on-surface transition-colors" type="button">
+        Mañana
+      </button>
+<button class="text-on-surface-variant pb-space-sm font-label-md text-label-md hover:text-on-surface transition-colors" type="button">
+        Esta semana
+      </button>
+</div>
+<!-- Board Content (3 Columns Kanban/Tags Layout) -->
+<div class="flex-1 p-space-lg overflow-y-auto">
+<div class="grid grid-cols-3 gap-space-lg items-start max-w-[1280px]">
+<!-- ============================================== -->
+<!-- COLUMNA 1: RECIBIDO                            -->
+<!-- ============================================== -->
+<section aria-labelledby="col-recibido" class="flex flex-col rounded-lg border border-outline bg-surface-container-low">
+<!-- Column Header -->
+<div class="px-space-md py-space-sm border-b border-outline flex items-center justify-between bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span>
+<h2 class="font-headline-md text-headline-md text-on-surface" id="col-recibido">Recibido</h2>
+</div>
+<span class="px-2 py-0.5 text-xs font-bold font-label-md rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant">
+              3
+            </span>
+</div>
+<!-- Cards Container -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Ticket Tag #214 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<!-- Ticket Perforation Header -->
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-on-surface-variant font-mono uppercase">TICKET DE MOSTRADOR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">#214</span>
+<span class="text-xs text-on-surface-variant font-medium">Recepción 09:15</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Bodega Piedra Alta</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    6 bolsas
+                  </span>
+<span class="flex items-center gap-1 font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">event</span>
+                    Entrega jue 7/11
+                  </span>
+</div>
+<!-- Footer Action Button -->
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-primary hover:text-on-primary-fixed-variant flex items-center gap-1 hover:underline active:scale-[0.98]" type="button">
+<span>Pasar a preparación</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Ticket Tag #213 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-on-surface-variant font-mono uppercase">TICKET DE MOSTRADOR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">#213</span>
+<span class="text-xs text-on-surface-variant font-medium">Recepción 10:30</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Lucía Ferreyra</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    3 prendas
+                  </span>
+<span class="flex items-center gap-1 font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">event</span>
+                    Entrega vie 8/11
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-primary hover:text-on-primary-fixed-variant flex items-center gap-1 hover:underline active:scale-[0.98]" type="button">
+<span>Pasar a preparación</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Ticket Tag #212 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-on-surface-variant font-mono uppercase">TICKET DE MOSTRADOR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">#212</span>
+<span class="text-xs text-on-surface-variant font-medium">Recepción 11:00</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Hotel Cordillera</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    4 bolsas
+                  </span>
+<span class="flex items-center gap-1 font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">event</span>
+                    Entrega mañana
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-primary hover:text-on-primary-fixed-variant flex items-center gap-1 hover:underline active:scale-[0.98]" type="button">
+<span>Pasar a preparación</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ============================================== -->
+<!-- COLUMNA 2: EN PREPARACIÓN                      -->
+<!-- ============================================== -->
+<section aria-labelledby="col-preparacion" class="flex flex-col rounded-lg border border-outline bg-surface-container-low">
+<!-- Column Header -->
+<div class="px-space-md py-space-sm border-b border-outline flex items-center justify-between bg-surface-container">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<h2 class="font-headline-md text-headline-md text-on-surface" id="col-preparacion">En preparación</h2>
+</div>
+<span class="px-2 py-0.5 text-xs font-bold font-label-md rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant">
+              2
+            </span>
+</div>
+<!-- Cards Container -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Ticket Tag #209 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-on-surface-variant font-mono uppercase">TICKET DE MOSTRADOR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-secondary">#209</span>
+<span class="text-xs text-on-surface-variant font-medium">Recepción 08:40</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Finca Los Olivos</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    8 bolsas
+                  </span>
+<span class="flex items-center gap-1 font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">event</span>
+                    Entrega mañana
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-secondary hover:text-on-secondary-container flex items-center gap-1 hover:underline active:scale-[0.98]" type="button">
+<span>Marcar listo</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Ticket Tag #208 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-on-surface-variant font-mono uppercase">TICKET DE MOSTRADOR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-secondary">#208</span>
+<span class="text-xs text-on-surface-variant font-medium">Recepción 09:05</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Martín Gómez</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    1 traje
+                  </span>
+<span class="flex items-center gap-1 font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">event</span>
+                    Entrega mañana
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-secondary hover:text-on-secondary-container flex items-center gap-1 hover:underline active:scale-[0.98]" type="button">
+<span>Marcar listo</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ============================================== -->
+<!-- COLUMNA 3: LISTO PARA ENTREGAR (DESTACADA)     -->
+<!-- ============================================== -->
+<section aria-labelledby="col-listo" class="flex flex-col rounded-lg border-2 border-tertiary bg-surface-container-low">
+<!-- Column Header with Golden Accent -->
+<div class="px-space-md py-space-sm border-b border-outline flex items-center justify-between bg-tertiary-fixed text-on-tertiary-fixed">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<h2 class="font-headline-md text-headline-md text-on-tertiary-fixed font-bold" id="col-listo">Listo para entregar</h2>
+</div>
+<span class="px-2 py-0.5 text-xs font-bold font-label-md rounded-full bg-surface text-tertiary-container border border-outline">
+              2
+            </span>
+</div>
+<!-- Cards Container -->
+<div class="p-3 flex flex-col gap-3">
+<!-- Ticket Tag #205 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-tertiary font-mono font-bold uppercase">LISTO PARA RETIRAR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">#205</span>
+<span class="font-label-md text-xs font-bold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded border border-outline-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+                    Entrega hoy
+                  </span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Bodega Cerro Negro</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    5 bolsas
+                  </span>
+<span class="text-on-surface-variant font-medium">
+                    Planchado institucional
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-primary hover:text-on-primary-fixed-variant bg-surface-container hover:bg-surface-container-high px-2.5 py-1 rounded border border-outline flex items-center gap-1 active:scale-[0.98]" type="button">
+<span>Entregar y cobrar</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Ticket Tag #204 -->
+<article class="relative bg-surface border border-outline rounded-lg flex flex-col overflow-hidden">
+<div class="h-5 bg-surface-container-low border-b border-dashed border-outline px-3 flex items-center justify-between">
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -ml-4 border border-outline"></div>
+<span class="text-[10px] tracking-widest text-tertiary font-mono font-bold uppercase">LISTO PARA RETIRAR</span>
+<div class="w-2.5 h-2.5 rounded-full bg-outline-variant -mr-4 border border-outline"></div>
+</div>
+<div class="p-3 flex flex-col">
+<div class="flex items-baseline justify-between mb-1">
+<span class="font-headline-md text-headline-md font-bold text-primary">#204</span>
+<span class="font-label-md text-xs font-bold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded border border-outline-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+                    Entrega hoy
+                  </span>
+</div>
+<div class="font-label-md text-label-md text-on-surface mb-2">Carla Sosa</div>
+<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">
+<span class="px-2 py-0.5 bg-surface-container rounded border border-outline-variant font-medium text-on-surface">
+                    2 acolchados
+                  </span>
+<span class="text-on-surface-variant font-medium">
+                    Lavado delicado pluma
+                  </span>
+</div>
+<div class="pt-2 border-t border-outline flex justify-end">
+<button class="font-label-md text-xs font-bold text-primary hover:text-on-primary-fixed-variant bg-surface-container hover:bg-surface-container-high px-2.5 py-1 rounded border border-outline flex items-center gap-1 active:scale-[0.98]" type="button">
+<span>Entregar y cobrar</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+</div>
+</div>
+</main>
+<script src="app.js"></script>
+</body></html>
