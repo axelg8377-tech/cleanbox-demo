@@ -38,6 +38,7 @@
     sigTicket: 418, sigRemito: 232, sigPedido: 215, sigFactura: 413
   };
 
+  SEED.pedidos.forEach(function (p, i) { p.iso = i < 3 ? HOY : '2026-10-23'; });
   function load() {
     try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.clientes) return s; } catch (e) {}
     return JSON.parse(JSON.stringify(SEED));
@@ -51,7 +52,7 @@
     ['Sábana 2 plazas', 3000, false, 'layers'], ['Toalla', 1200, false, 'texture'], ['Vestido de fiesta', 8500, false, 'apparel']
   ].map(function (p) { return { nombre: p[0], precio: p[1], rapida: p[2], icono: p[3] }; });
   function precioDe(nombre) { var p = S.precios.filter(function (x) { return x.nombre === nombre; })[0]; return p ? p.precio : 0; }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e) { return false; } }
 
   // ── Utilidades ─────────────────────────────────────────────────────
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -61,6 +62,9 @@
   function aNum(t) { return Number(String(t).replace(/[^\d-]/g, '')) || 0; }
   function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, ''); }
   function soloDig(t) { return String(t || '').replace(/\D/g, ''); }
+  function importeValido(n) { return Number.isSafeInteger(n) && n >= 0; }
+  function clienteUnico(nombre) { var lista = S.clientes.filter(function (c) { return c.nombre === nombre; }); return lista.length === 1 ? lista[0] : null; }
+  function clienteRegistro(r) { return r.clienteId ? S.clientes.filter(function (c) { return c.id === r.clienteId; })[0] : clienteUnico(r.cliente); }
   function byText(sel, txt, root) { return $$(sel, root).filter(function (el) { return el.textContent.trim().indexOf(txt) === 0; }); }
   function d(iso) { var p = iso.split('-'); return new Date(+p[0], p[1] - 1, +p[2]); }
   function addDias(iso, n) { var x = d(iso); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); }
@@ -104,7 +108,7 @@
         ? 'flex-1 bg-primary text-on-primary rounded py-2 px-space-md font-label-md text-label-md flex items-center justify-center gap-1.5 hover:bg-primary-container active:scale-[0.98] transition-colors'
         : 'px-space-md py-2 text-on-surface-variant hover:text-on-surface border border-outline rounded font-label-md text-label-md hover:bg-surface-container transition-colors';
       el.textContent = b.texto;
-      el.addEventListener('click', function () { if (b.accion() !== false) fondo.remove(); });
+      el.addEventListener('click', function () { if (b.accion() !== false) cerrar(); });
       $('[data-pie]', fondo).appendChild(el);
     });
     function cerrar() { fondo.remove(); document.removeEventListener('keydown', onKey); }
@@ -120,6 +124,157 @@
   var INPUT = 'w-full px-3 py-2 bg-background border border-outline rounded text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary';
   var LABEL = 'block text-xs font-label-md text-on-surface mb-1';
   function campo(label, html) { return '<div><label class="' + LABEL + '">' + label + '</label>' + html + '</div>'; }
+
+  // Remitos ficticios compartidos por Caja y Facturar. No se agregan al guardar ni al recargar.
+  var EJEMPLOS = [
+    { remito: 'R-0228', ticket: 'T-0414', iso: '2026-10-23', hora: '10:05', cliente: 'Bodega Cerro Negro', tipo: 'empresa',
+      items: [{ nombre: 'Camisa', cant: 6, precio: 2500 }, { nombre: 'Pantalón', cant: 2, precio: 3000 }], total: 21000, pagos: [], observaciones: 'Una camisa con mancha en el cuello.' },
+    { remito: 'R-0229', ticket: 'T-0415', iso: HOY, hora: '09:20', cliente: 'Bodega Piedra Alta', tipo: 'empresa',
+      items: [{ nombre: 'Bolsa de lavado institucional', cant: 6, precio: 6500 }], total: 39000, pagos: [] },
+    { remito: 'R-0230', ticket: 'T-0416', iso: HOY, hora: '09:45', cliente: 'Lucía Ferreyra', tipo: 'particular',
+      items: [{ nombre: 'Camisa', cant: 2, precio: 2500 }], total: 5000, pagos: [{ iso: HOY, hora: '09:45', medio: 'Efectivo', importe: 2000 }] },
+    { remito: 'R-0231', ticket: 'T-0417', iso: HOY, hora: '10:00', cliente: 'Hotel Cordillera', tipo: 'empresa',
+      items: [{ nombre: 'Mantel', cant: 10, precio: 4000 }], total: 40000, pagos: [{ iso: HOY, hora: '10:00', medio: 'Transferencia', importe: 40000 }] }
+  ];
+  if (!S.remitosEjemplo) S.remitosEjemplo = JSON.parse(JSON.stringify(EJEMPLOS));
+  function ventas() { return S.remitosEjemplo.concat(S.ventas); }
+  function pagos(v) {
+    // Compatibilidad: un arreglo vacío es deuda; sólo ventas antiguas sin campo eran cobros completos.
+    return Array.isArray(v.pagos) ? v.pagos : (['Efectivo', 'Transferencia', 'Mercado Pago'].indexOf(v.medio) >= 0
+      ? [{ iso: v.iso, hora: v.hora, medio: v.medio, importe: v.total }] : []);
+  }
+  function cobrado(v) { return pagos(v).reduce(function (n, p) { return n + p.importe; }, 0); }
+  function saldo(v) { return Math.max(0, v.total - cobrado(v)); }
+  function estadoCobro(v) { return saldo(v) === 0 ? 'Pagado' : cobrado(v) ? 'Pago parcial' : 'Debe / cuenta corriente'; }
+  function detalleVenta(v) { return v.items ? v.items.map(function (it) { return it.cant + ' ' + it.nombre; }).join(' + ') : v.detalle || ''; }
+  function ventaPedido(p) { return p && ventas().filter(function (v) { return v.pedido === '#' + p.n; })[0]; }
+  function fechaValida(iso) { return /^\d{4}-\d{2}-\d{2}$/.test(iso) && !isNaN(d(iso).getTime()) && fechaCorta(iso) === iso.slice(8, 10) + '/' + iso.slice(5, 7); }
+  var BTN = 'px-3 py-2 border border-outline rounded text-primary font-label-md text-[13px] hover:bg-surface-container focus:outline-primary';
+  var MEDIOS = ['Efectivo', 'Transferencia', 'Mercado Pago'];
+
+  function formularioPago(obtenerTotal, inicial) {
+    var box = document.createElement('div'), modo = inicial || 'Debe', valores = {};
+    box.className = 'flex flex-col gap-2';
+    box.innerHTML = '<span class="text-xs font-bold text-on-surface-variant">Forma de pago</span><div data-modos class="flex flex-wrap gap-1"></div>' +
+      '<div data-importes class="flex flex-col gap-2"></div><p data-saldo role="status" class="text-[13px] font-label-md text-on-surface"></p>';
+    MEDIOS.forEach(function (m) {
+      var label = document.createElement('label'); label.className = 'flex items-center justify-between gap-2 text-[13px] text-on-surface';
+      label.innerHTML = esc(m) + '<input aria-label="Importe en ' + esc(m) + '" type="number" min="0" step="1" value="0" class="w-28 px-2 py-1.5 bg-background border border-outline rounded focus:border-primary">';
+      valores[m] = $('input', label); valores[m].addEventListener('input', actualizar); $('[data-importes]', box).appendChild(label);
+    });
+    ['Debe'].concat(MEDIOS, ['Parcial / combinado']).forEach(function (m) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = m; b.className = BTN;
+      b.addEventListener('click', function () { modo = m; actualizar(); }); $('[data-modos]', box).appendChild(b);
+    });
+    function leer() {
+      var total = obtenerTotal(), lista = [];
+      if (!importeValido(total)) return null;
+      if (modo === 'Debe') return [];
+      if (modo !== 'Parcial / combinado') return total > 0 ? [{ medio: modo, importe: total }] : [];
+      var invalido = MEDIOS.some(function (m) { var el = valores[m]; return el.value === '' || !el.checkValidity() || !importeValido(Number(el.value)); });
+      if (invalido) return null;
+      MEDIOS.forEach(function (m) { var n = Number(valores[m].value); if (n > 0) lista.push({ medio: m, importe: n }); });
+      var suma = lista.reduce(function (n, p) { return n + p.importe; }, 0);
+      return importeValido(suma) && suma > 0 && suma <= total ? lista : null;
+    }
+    function actualizar() {
+      $$('button', $('[data-modos]', box)).forEach(function (b) { b.setAttribute('aria-pressed', String(b.textContent === modo)); b.classList.toggle('bg-primary-container', b.textContent === modo); });
+      $('[data-importes]', box).classList.toggle('hidden', modo !== 'Parcial / combinado');
+      var lista = leer(), suma = lista ? lista.reduce(function (n, p) { return n + p.importe; }, 0) : 0;
+      $('[data-saldo]', box).textContent = lista ? 'Paga ahora: ' + plata(suma) + ' · Queda debiendo: ' + plata(obtenerTotal() - suma) : 'Revisá los importes: deben ser positivos y no superar el saldo.';
+    }
+    actualizar();
+    return { elemento: box, leer: leer, actualizar: actualizar, reiniciar: function () { modo = 'Debe'; MEDIOS.forEach(function (m) { valores[m].value = 0; }); actualizar(); } };
+  }
+
+  function registrarPago(v, alGuardar) {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3';
+    cuerpo.innerHTML = '<p class="text-on-surface">' + esc(v.cliente) + ' · ' + esc(v.remito) + '<br>Saldo pendiente: <b>' + plata(saldo(v)) + '</b></p>' +
+      campo('Fecha del cobro', '<input aria-label="Fecha del cobro" data-fecha-cobro type="date" value="' + HOY + '" class="' + INPUT + '">');
+    var form = formularioPago(function () { return saldo(v); }, 'Parcial / combinado'), confirmado = false;
+    cuerpo.appendChild(form.elemento);
+    modal('Registrar pago', cuerpo, [{ texto: 'Confirmar pago', primario: true, accion: function () {
+      if (confirmado) return false;
+      var lista = form.leer(), iso = $('[data-fecha-cobro]', cuerpo).value;
+      if (!lista || !lista.length || !fechaValida(iso) || iso < v.iso) { toast('Revisá importes y fecha del cobro', 'error'); return false; }
+      var anteriores = v.pagos;
+      v.pagos = pagos(v).concat(lista.map(function (p) { return { medio: p.medio, importe: p.importe, iso: iso, hora: ahora() }; }));
+      if (!save()) { if (anteriores === undefined) delete v.pagos; else v.pagos = anteriores; toast('No se pudo guardar el pago. Revisá el almacenamiento del navegador.', 'error'); return false; }
+      confirmado = true; toast('Pago registrado · saldo ' + plata(saldo(v))); if (alGuardar) alGuardar();
+    } }, { texto: 'Cancelar', accion: function () {} }]);
+  }
+
+  function verRemito(v, alCambiar) {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3';
+    cuerpo.innerHTML = '<p class="text-on-surface"><b>' + esc(v.cliente) + '</b><br>' + esc(v.remito) + ' · ' + esc(v.iso) + '</p>' +
+      '<div class="overflow-x-auto"><table class="w-full text-sm text-on-surface"><thead><tr><th class="text-left">Prenda / servicio</th><th>Cant.</th><th>Unitario</th><th>Importe</th></tr></thead><tbody>' +
+      (v.items || []).map(function (it) { return '<tr class="border-b border-outline"><td class="py-2">' + esc(it.nombre) + '</td><td class="text-center">' + it.cant + '</td><td class="text-right">' + plata(it.precio) + '</td><td class="text-right">' + plata(it.cant * it.precio) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      (!v.items ? '<p>' + esc(v.detalle) + '</p>' : '') +
+      (v.observaciones ? '<p class="text-sm text-on-surface whitespace-pre-wrap break-words"><b>Observaciones:</b> ' + esc(v.observaciones) + '</p>' : '') +
+      '<p class="font-label-md text-on-surface">Total: ' + plata(v.total) + '<br>Pagado: ' + plata(cobrado(v)) + '<br>Saldo pendiente: ' + plata(saldo(v)) + ' · ' + estadoCobro(v) + '</p>' +
+      '<div class="text-sm text-on-surface"><b>Historial de pagos</b>' + (pagos(v).length ? pagos(v).map(function (p) { return '<p>' + esc(p.iso) + ' · ' + esc(p.medio) + ' · ' + plata(p.importe) + '</p>'; }).join('') : '<p>Sin pagos registrados.</p>') + '</div>';
+    var acciones = [{ texto: 'Imprimir remito', accion: function () { imprimirTicket(v); } }];
+    if (saldo(v) > 0) acciones.unshift({ texto: 'Registrar pago', primario: true, accion: function () { registrarPago(v, alCambiar); } });
+    var p = S.pedidos.filter(function (p0) { return v.pedido === '#' + p0.n; })[0];
+    if (p && p.estado === 'listo') acciones.push({ texto: 'Entregar pedido', accion: function () {
+      p.estado = 'entregado'; p.entregadoIso = HOY;
+      if (!save()) { p.estado = 'listo'; delete p.entregadoIso; toast('No se pudo guardar la entrega', 'error'); return false; }
+      toast('Pedido entregado · saldo ' + plata(saldo(v))); if (alCambiar) alCambiar();
+    } });
+    acciones.push({ texto: 'Cerrar', accion: function () {} });
+    var ventana = modal('Detalle del remito', cuerpo, acciones);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[680px]');
+    $('[data-pie]', ventana).classList.add('flex-wrap');
+  }
+
+  function consultarMovimientos(alCambiar) {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3';
+    cuerpo.innerHTML = '<div class="flex flex-wrap gap-2">' +
+      '<label class="text-xs text-on-surface">Desde<input aria-label="Consultar desde" data-desde type="date" value="' + HOY + '" class="' + INPUT + '"></label>' +
+      '<label class="text-xs text-on-surface">Hasta<input aria-label="Consultar hasta" data-hasta type="date" value="' + HOY + '" class="' + INPUT + '"></label>' +
+      '<button type="button" data-sin-fecha class="' + BTN + '">Todas las fechas</button></div>' +
+      '<input aria-label="Buscar cliente o empresa" data-buscar placeholder="Buscar por nombre de persona o empresa" class="' + INPUT + '">' +
+      '<label class="text-sm text-on-surface"><input data-pendientes type="checkbox"> Sólo remitos con saldo pendiente</label>' +
+      '<p data-resumen role="status" class="font-label-md text-sm text-on-surface"></p>' +
+      '<div class="overflow-x-auto"><table class="w-full text-sm text-on-surface"><thead><tr><th class="text-left">Fecha / actividad</th><th class="text-left">Cliente</th><th>Total</th><th>Saldo</th><th></th></tr></thead><tbody></tbody></table></div>';
+    var desde = $('[data-desde]', cuerpo), hasta = $('[data-hasta]', cuerpo), buscar = $('[data-buscar]', cuerpo), pendientes = $('[data-pendientes]', cuerpo);
+    function enFecha(iso) { return iso ? (!desde.value || iso >= desde.value) && (!hasta.value || iso <= hasta.value) : !desde.value && !hasta.value; }
+    function renderConsulta() {
+      if (desde.value && hasta.value && desde.value > hasta.value) { $('[data-resumen]', cuerpo).textContent = 'Revisá el rango de fechas'; $('tbody', cuerpo).innerHTML = ''; return; }
+      var filas = [], q = norm(buscar.value), identidades = {}, sinIdentificar = 0, cantVentas = 0;
+      ventas().forEach(function (v) {
+        var actividad = [], p = S.pedidos.filter(function (p0) { return v.pedido === '#' + p0.n; })[0];
+        if (enFecha(v.iso)) actividad.push('Venta / remito');
+        if (pagos(v).some(function (pago) { return enFecha(pago.iso); })) actividad.push('Cobro');
+        if (p && p.entregadoIso && enFecha(p.entregadoIso)) actividad.push('Entrega');
+        if (actividad.length && (!q || norm(v.cliente).indexOf(q) >= 0) && (!pendientes.checked || saldo(v) > 0)) {
+          if (enFecha(v.iso)) cantVentas++;
+          var fechasActividad = [];
+          if (enFecha(v.iso) && v.iso) fechasActividad.push(v.iso);
+          pagos(v).forEach(function (pago) { if (enFecha(pago.iso) && fechasActividad.indexOf(pago.iso) < 0) fechasActividad.push(pago.iso); });
+          if (p && p.entregadoIso && enFecha(p.entregadoIso) && fechasActividad.indexOf(p.entregadoIso) < 0) fechasActividad.push(p.entregadoIso);
+          filas.push({ registro: v, fecha: fechasActividad.join(', ') || 'Sin fecha', actividad: actividad.join(' / '), venta: v });
+        }
+      });
+      if (!pendientes.checked) S.pedidos.forEach(function (p) {
+        if (enFecha(p.iso) && (!q || norm(p.cliente).indexOf(q) >= 0)) filas.push({ registro: p, fecha: p.iso || 'Sin fecha de recepción', actividad: 'Recepción #' + p.n, venta: ventaPedido(p) });
+      });
+      filas.forEach(function (f) { var c = clienteRegistro(f.registro); if (c) identidades[c.id] = true; else sinIdentificar++; });
+      var remitosUnicos = {};
+      filas.forEach(function (f) { if (f.venta) remitosUnicos[f.venta.remito] = f.venta; });
+      var saldoFiltrado = Object.keys(remitosUnicos).reduce(function (n, id) { return n + saldo(remitosUnicos[id]); }, 0);
+      $('[data-resumen]', cuerpo).textContent = cantVentas + ' ventas · ' + Object.keys(identidades).length + ' clientes identificados · ' + filas.length + ' movimientos · Saldo de remitos: ' + plata(saldoFiltrado) + (sinIdentificar ? ' · ' + sinIdentificar + ' movimientos sin identidad confirmada' : '');
+      $('tbody', cuerpo).innerHTML = filas.map(function (f, i) {
+        return '<tr class="border-b border-outline"><td class="py-2">' + esc(f.fecha) + '<br><span class="text-xs text-on-surface-variant">' + esc(f.actividad) + '</span></td><td>' + esc(f.registro.cliente) + '</td><td class="text-right">' + (f.venta ? plata(f.venta.total) : '—') + '</td><td class="text-right">' + (f.venta ? plata(saldo(f.venta)) : '—') + '</td><td><button type="button" data-mov="' + i + '" class="' + BTN + '">' + (f.venta ? 'Ver remito' : 'Cargar remito') + '</button></td></tr>';
+      }).join('') || '<tr><td colspan="5" class="py-4">Sin movimientos con estos filtros.</td></tr>';
+      $$('[data-mov]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { var f = filas[+b.dataset.mov]; if (f.venta) verRemito(f.venta, function () { renderConsulta(); if (alCambiar) alCambiar(); }); else location.href = 'venta.html?pedido=' + f.registro.n; }); });
+    }
+    [desde, hasta, buscar, pendientes].forEach(function (el) { el.addEventListener('input', renderConsulta); });
+    $('[data-sin-fecha]', cuerpo).addEventListener('click', function () { desde.value = ''; hasta.value = ''; renderConsulta(); });
+    renderConsulta();
+    var ventana = modal('Ventas, clientes y remitos', cuerpo, [{ texto: 'Cerrar', accion: function () {} }]);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[860px]');
+  }
 
   // ── Selector de cliente con alta en el mismo paso ─────────────────
   // Escribe nombre, teléfono o CUIT. Si existe lo elige; si no, lo crea ahí mismo.
@@ -243,13 +398,15 @@
     var copia = function (leyenda) {
       return '<div class="t">' + (N.logo ? '<img src="' + N.logo + '" class="logo">' : '<div class="marca">CLEANBOX</div>') +
         '<div class="c">TINTORERÍA</div><div class="c s">' + esc(N.direccion) + '<br>Tel: ' + esc(N.telefono) + '</div><hr>' +
-        '<div class="f"><b>' + (v.tipo === 'empresa' ? 'REMITO ' + v.remito : 'TICKET ' + v.ticket) + '</b><span>' + esc(v.fecha) + ' ' + v.hora + '</span></div>' +
+        '<div class="f"><b>' + (v.tipo === 'empresa' ? 'REMITO ' + v.remito : 'TICKET ' + v.ticket) + '</b><span>' + esc(v.fecha || v.iso) + ' ' + esc(v.hora) + '</span></div>' +
         '<div>Cliente: ' + esc(v.cliente) + '</div>' + (v.cuit ? '<div class="s">CUIT: ' + esc(v.cuit) + '</div>' : '') +
         (v.pedido ? '<div class="s">Pedido ' + esc(v.pedido) + '</div>' : '') + '<hr>' +
         v.items.map(function (i) { return '<div class="f"><span>' + i.cant + ' ' + esc(i.nombre) + '</span><span>' + plata(i.cant * i.precio) + '</span></div>'; }).join('') +
         (v.descuento ? '<div class="f s"><span>Descuento</span><span>-' + plata(v.descuento) + '</span></div>' : '') +
         '<hr><div class="f tot"><span>TOTAL</span><span>' + plata(v.total) + '</span></div>' +
-        '<div class="s">Medio de pago: ' + esc(v.medio) + '</div>' + (v.entrega ? '<div><b>Fecha de entrega: ' + esc(v.entrega) + '</b></div>' : '') +
+        '<div class="f"><span>Pagado</span><span>' + plata(cobrado(v)) + '</span></div><div class="f"><b>Saldo pendiente</b><b>' + plata(saldo(v)) + '</b></div>' +
+        '<div class="s">' + estadoCobro(v) + '</div>' + pagos(v).map(function (p) { return '<div class="s">' + esc(p.iso) + ' · ' + esc(p.medio) + ': ' + plata(p.importe) + '</div>'; }).join('') +
+        (v.entrega ? '<div><b>Fecha de entrega: ' + esc(v.entrega) + '</b></div>' : '') +
         (v.observaciones ? '<hr><div class="obs"><b>Observaciones:</b><br>' + esc(v.observaciones) + '</div>' : '') +
         '<hr><div class="c s">' + esc(N.pie) + '</div><div class="ley">' + leyenda + '</div><div class="c s">DOCUMENTO NO VÁLIDO COMO FACTURA</div></div>';
     };
@@ -294,7 +451,7 @@
         '<div class="p-3 flex flex-col"><div class="flex items-baseline justify-between mb-1"><span class="font-headline-md text-headline-md font-bold ' + numCls + '">#' + p.n + '</span>' + derecha + '</div>' +
         '<div class="font-label-md text-label-md text-on-surface mb-2">' + esc(p.cliente) + '</div>' +
         '<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">' + meta + '</div>' +
-        '<div class="pt-2 border-t border-outline flex justify-end">' + accion + '</div></div></article>';
+        '<div class="pt-2 border-t border-outline flex flex-wrap justify-end gap-2"><button type="button" data-acc="remito" class="' + BTN + '">' + (ventaPedido(p) ? 'Ver remito / pagos' : 'Remito / anticipo') + '</button>' + accion + '</div></div></article>';
     }
     function pasa(p) {
       if (filtro === 'hoy') return p.entrega === HOY;
@@ -316,9 +473,14 @@
     document.addEventListener('click', function (e) {
       var b = e.target.closest('[data-acc]'); if (!b) return;
       var p = S.pedidos.filter(function (x) { return x.n === +b.closest('article').dataset.n; })[0];
+      var v = ventaPedido(p);
+      if (b.dataset.acc === 'remito' || b.dataset.acc === 'entregar' && v) {
+        if (v) verRemito(v, render); else location.href = 'venta.html?pedido=' + p.n;
+        return;
+      }
       if (b.dataset.acc === 'preparar') p.estado = 'preparacion';
       else if (b.dataset.acc === 'listo') p.estado = 'listo';
-      else { location.href = 'venta.html?pedido=' + p.n; return; }
+      else { location.href = 'venta.html?pedido=' + p.n + '&entregar=1'; return; }
       save(); render();
     });
     // Pestañas (clases exactas de Stitch)
@@ -361,8 +523,9 @@
       modal('Recibir pedido', cuerpo, [
         { texto: 'Guardar pedido', primario: true, accion: function () {
           if (!cli) { toast('Elegí o creá el cliente', 'error'); return false; }
-          var p = { n: S.sigPedido++, cliente: cli.nombre, detalle: $('[data-det]', extra).value.trim(), entrega: fechaIn.value || entrega, estado: 'recibido', hora: ahora() };
+          var p = { n: S.sigPedido++, clienteId: cli.id, cliente: cli.nombre, detalle: $('[data-det]', extra).value.trim(), entrega: fechaIn.value || entrega, estado: 'recibido', hora: ahora() };
           p.observaciones = $('[data-obs]', extra).value.trim();
+          p.iso = HOY;
           S.pedidos.unshift(p); cli.ultimo = fechaCorta(HOY); cli.ultimoNro = '#' + p.n; save(); render();
           toast('Pedido #' + p.n + ' recibido');
         } },
@@ -395,15 +558,16 @@
     });
     var params = new URLSearchParams(location.search);
     var pedido = params.get('pedido') ? S.pedidos.filter(function (p) { return p.n === +params.get('pedido'); })[0] : null;
-    var cliente = pedido ? clientePorNombre(pedido.cliente) : (params.get('cliente') ? clientePorNombre(params.get('cliente')) : null);
+    if (ventaPedido(pedido)) { location.replace('caja.html?remito=' + encodeURIComponent(ventaPedido(pedido).remito)); return; }
+    var cliente = pedido ? clienteRegistro(pedido) : (params.get('clienteId') ? S.clientes.filter(function (c) { return c.id === params.get('clienteId'); })[0] : params.get('cliente') ? clienteUnico(params.get('cliente')) : null);
     // Si no viene de un pedido ni de Clientes, arranca con el ejemplo de Stitch
     var items = [];
-    if (!pedido && !cliente) {
+    if (!pedido && !cliente && !params.has('clienteId') && !params.has('cliente') && !params.has('pedido')) {
       cliente = clientePorNombre('Bodega Cerro Negro');
       items = [{ nombre: 'Bolsa de lavado institucional', cant: 5 }, { nombre: 'Mantel', cant: 2 }];
     }
     var descPct = cliente && cliente.tipo === 'empresa' && items.length ? 10 : 0;
-    var totalManual = null, medio = 'Transferencia';
+    var totalManual = null, formPago;
 
     // Tarjeta de cliente: se reemplaza por el selector con alta en el mismo paso
     var tarjetaCli = $('section .bg-surface-container-lowest.p-space-md');
@@ -430,6 +594,7 @@
         modal('Cliente de la venta', cuerpo, [
           { texto: 'Usar este cliente', primario: true, accion: function () {
             if (!elegido) { toast('Elegí o creá el cliente', 'error'); return false; }
+            if (pedido && (pedido.clienteId ? elegido.id !== pedido.clienteId : elegido.nombre !== pedido.cliente)) { toast('Este remito debe conservar el cliente del pedido', 'error'); return false; }
             cliente = elegido; if (cliente.tipo !== 'empresa') descPct = 0; pintarCliente(); render();
           } },
           { texto: 'Cancelar', accion: function () {} }
@@ -487,6 +652,7 @@
       $('span.font-label-md', filas[1]).textContent = 'Descuento (' + descPct + '%)';
       $(':scope > span:last-child', filas[1]).textContent = desc ? '−' + plata(desc) : '$0';
       $(':scope > span', filas[2]).textContent = plata(tot);
+      if (formPago) formPago.actualizar();
       return { sub: sub, desc: desc + (totalManual != null ? sub - desc - totalManual : 0), tot: tot };
     }
     renglones.addEventListener('input', function (e) {
@@ -544,9 +710,14 @@
     var MP_ON = 'py-2 px-1 text-center font-label-md text-[13px] rounded bg-primary text-on-primary font-bold shadow-none';
     var MP_OFF = 'py-2 px-1 text-center font-label-md text-[13px] rounded text-on-surface-variant hover:bg-surface-container-low transition-colors';
     var mps = $$('.grid.grid-cols-3 > button', colTicket);
-    mps.forEach(function (b) {
-      b.addEventListener('click', function () { medio = b.textContent.trim(); mps.forEach(function (o) { o.className = o === b ? MP_ON : MP_OFF; }); });
-    });
+    var contMedios = mps[0].parentElement.parentElement;
+    formPago = formularioPago(function () { return totalesSinActualizar(); }, cliente && cliente.tipo === 'empresa' ? 'Debe' : 'Efectivo');
+    // Se evita llamar render/totales desde el formulario para conservar el foco al escribir.
+    function totalesSinActualizar() {
+      var sub = items.reduce(function (n, it) { return n + it.cant * unitario(it); }, 0);
+      return totalManual != null ? totalManual : sub - Math.round(sub * descPct / 100);
+    }
+    contMedios.replaceChildren(formPago.elemento);
     var nroTicket = $('span.font-mono', colTicket);
     function nro() { nroTicket.textContent = '#T-' + ('0000' + S.sigTicket).slice(-4); }
     function cobrar(imprimir) {
@@ -556,26 +727,36 @@
         return inp.hasAttribute('data-descripcion') ? !inp.value.trim() : inp.value === '' || !inp.checkValidity();
       })[0];
       if (invalido) { toast('Completá la descripción y un precio válido en cada renglón', 'error'); invalido.focus(); return; }
+      if (ventaPedido(pedido)) { toast('Este pedido ya tiene remito. Abrilo desde Caja para registrar el pago.', 'error'); return; }
       var r = render();
+      var nuevosPagos = formPago.leer();
+      if (!nuevosPagos || !importeValido(r.tot) || r.tot <= 0 || items.some(function (it) { return !importeValido(unitario(it)) || !Number.isSafeInteger(it.cant) || it.cant <= 0 || !importeValido(unitario(it) * it.cant); })) { toast('Revisá total e importes del pago: usá pesos enteros válidos', 'error'); return; }
       var v = {
         ticket: 'T-' + ('0000' + S.sigTicket++).slice(-4), remito: 'R-' + ('0000' + S.sigRemito++).slice(-4),
-        fecha: fechaCorta(HOY) + '/2026', iso: HOY, hora: ahora(), cliente: cliente.nombre, tipo: cliente.tipo, cuit: cliente.cuit || '',
+        fecha: fechaCorta(HOY) + '/2026', iso: HOY, hora: ahora(), clienteId: cliente.id, cliente: cliente.nombre, tipo: cliente.tipo, cuit: cliente.cuit || '',
         items: items.map(function (it) { return { nombre: descripcion(it).trim(), cant: it.cant, precio: unitario(it) }; }),
         detalle: items.map(function (it) { return it.cant + ' ' + descripcion(it).trim().toLowerCase(); }).join(' + '),
         observaciones: observaciones.value.trim(),
-        descuento: r.desc, total: r.tot, medio: medio, pedido: pedido ? '#' + pedido.n : '',
+        pagos: nuevosPagos.map(function (p) { return { medio: p.medio, importe: p.importe, iso: HOY, hora: ahora() }; }),
+        descuento: r.desc, total: r.tot, medio: nuevosPagos.length > 1 ? 'Combinado' : nuevosPagos.length ? nuevosPagos[0].medio : 'Debe', pedido: pedido ? '#' + pedido.n : '',
         entrega: entregaIso ? (function (x) { return DIAS[x.getDay()] + ' ' + ('0' + x.getDate()).slice(-2) + '/' + ('0' + (x.getMonth() + 1)).slice(-2) + '/' + x.getFullYear(); })(d(entregaIso)) : ''
       };
       S.ventas.push(v);
-      if (pedido) pedido.estado = 'entregado';
+      var estadoAnterior = pedido && pedido.estado;
+      if (pedido && params.get('entregar') === '1') { pedido.estado = 'entregado'; pedido.entregadoIso = HOY; }
       cliente.ultimo = fechaCorta(HOY); if (pedido) cliente.ultimoNro = '#' + pedido.n;
-      save();
+      if (!save()) { S.ventas.pop(); if (pedido) { pedido.estado = estadoAnterior; delete pedido.entregadoIso; } toast('No se pudo guardar el remito. Revisá el almacenamiento del navegador.', 'error'); return; }
       if (imprimir) imprimirTicket(v);
-      toast('Venta ' + v.ticket + ' cobrada · ' + plata(v.total) + ' · ' + medio);
-      items = []; pedido = null; totalManual = null; descPct = 0; observaciones.value = ''; ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
+      toast('Remito ' + v.remito + ' guardado · pagado ' + plata(cobrado(v)) + ' · debe ' + plata(saldo(v)));
+      items = []; pedido = null; totalManual = null; descPct = 0; observaciones.value = ''; formPago.reiniciar(); ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
     }
     var cobrarBtn = $$('button', colTicket).filter(function (b) { return /Cobrar e imprimir/.test(b.textContent); })[0];
     var guardarBtn = $$('button', colTicket).filter(function (b) { return /Guardar sin imprimir/.test(b.textContent); })[0];
+    var avisoRemito = document.createElement('p'); avisoRemito.className = 'text-xs text-on-surface-variant';
+    avisoRemito.textContent = 'Confirmá prendas y total antes de guardar el remito o un anticipo. Después podés registrar pagos sobre este mismo comprobante.';
+    agregarRenglon.after(avisoRemito);
+    $('span:last-child', cobrarBtn).textContent = 'Guardar e imprimir ticket';
+    if (pedido && params.get('entregar') === '1') $('span:last-child', cobrarBtn).textContent = 'Entregar e imprimir ticket';
     cobrarBtn.addEventListener('click', function () { cobrar(true); });
     guardarBtn.addEventListener('click', function () { cobrar(false); });
     // Filtro de la grilla
@@ -639,7 +820,7 @@
 
     // Fecha de entrega: sale impresa en el ticket y el remito
     var entregaIso = pedido ? pedido.entrega : addDias(HOY, 3);
-    var bloqueMedio = $$('span', colTicket).filter(function (s) { return /^Medio de pago$/.test(s.textContent.trim()); })[0].parentElement;
+    var bloqueMedio = contMedios;
     var bloqueEnt = document.createElement('div');
     bloqueEnt.className = 'flex flex-col gap-1.5 pt-space-xs';
     bloqueEnt.innerHTML = '<span class="text-[12px] uppercase font-bold text-on-surface-variant">Fecha de entrega</span>' +
@@ -689,7 +870,7 @@
         (emp ? '<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Resp. Inscripto</span>' : '') +
         (c.ultimo ? '<span>Último pedido: <strong class="text-on-surface font-medium">' + esc(c.ultimo) + '</strong>' + (c.ultimoNro ? ' (' + esc(c.ultimoNro) + ')' : '') + '</span>' : '<span>Sin pedidos todavía</span>') +
         '</div></div></div><div class="flex items-center gap-2">' +
-        '<a href="venta.html?cliente=' + encodeURIComponent(c.nombre) + '" class="px-3 py-1.5 text-xs font-label-md border border-outline rounded text-primary hover:bg-surface-container active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-1">' +
+        '<a href="venta.html?clienteId=' + encodeURIComponent(c.id) + '" class="px-3 py-1.5 text-xs font-label-md border border-outline rounded text-primary hover:bg-surface-container active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-1">' +
         '<span class="material-symbols-outlined text-[15px]">add_shopping_cart</span><span>Nueva venta</span></a></div></div>';
     }
     function render() {
@@ -760,36 +941,14 @@
     var plantilla = $$('tr', tbody);
     var MEDIO_ROW = {};
     plantilla.forEach(function (tr) { MEDIO_ROW[$$('td', tr)[3].textContent.trim()] = tr; });
-    S.ventas.forEach(function (v) {
-      var tr = (MEDIO_ROW[v.medio] || plantilla[0]).cloneNode(true);
-      var td = $$('td', tr);
-      td[0].textContent = v.hora; $('span', td[1]).textContent = v.ticket; td[2].textContent = v.cliente;
-      td[4].textContent = plata(v.total);
-      tbody.appendChild(tr);
-    });
     var tot = { Efectivo: [0, 0], Transferencia: [0, 0], 'Mercado Pago': [0, 0] };
-    $$('tr', tbody).forEach(function (tr) {
-      var td = $$('td', tr), m = td[3].textContent.trim();
-      if (tot[m]) { tot[m][0] += aNum(td[4].textContent); tot[m][1]++; }
-    });
-    var total = tot.Efectivo[0] + tot.Transferencia[0] + tot['Mercado Pago'][0];
-    var n = $$('tr', tbody).length;
+    var total = 0, n = 0;
     var cards = $$('main section:first-of-type .grid > div');
-    ['Efectivo', 'Transferencia', 'Mercado Pago'].forEach(function (m, i) {
-      $('span.text-headline-md', cards[i]).textContent = plata(tot[m][0]);
-      $('p', cards[i]).textContent = tot[m][1] + (tot[m][1] === 1 ? ' cobro' : ' cobros');
-    });
-    $('span.text-display', cards[3]).textContent = plata(total);
-    $('span.px-2', cards[3]).textContent = n + ' ventas';
-    $('tfoot td.text-right', document).textContent = plata(total);
-    var pie = $$('main span').filter(function (s) { return /^Mostrando/.test(s.textContent.trim()); })[0];
-    if (pie) pie.textContent = 'Mostrando ' + n + ' de ' + n + ' operaciones del turno';
-    var regs = $$('main span').filter(function (s) { return /registros ordenados/.test(s.textContent); })[0];
-    if (regs) regs.textContent = '· ' + n + ' registros ordenados por hora';
     // Verificar efectivo
     var esperado = $$('main strong').filter(function (s) { return /^\$/.test(s.textContent.trim()); })[0];
     if (esperado) esperado.textContent = plata(tot.Efectivo[0]);
     var contado = $('main input[value]');
+    contado.value = '';
     var difBox = contado.closest('.grid').children[1];
     var difCaja = $('div.flex', difBox), difVal = $('span.font-headline-md', difCaja), difTxt = $('span.text-\\[13px\\]', difCaja);
     function dif() {
@@ -801,6 +960,36 @@
       difVal.className = 'font-headline-md font-bold text-[18px] ' + (d0 === 0 ? 'text-on-primary-fixed-variant' : 'text-error');
     }
     contado.addEventListener('input', dif); dif();
+    var barra = document.createElement('div'); barra.className = 'px-space-lg py-3 border-b border-outline flex flex-wrap items-end gap-3';
+    barra.innerHTML = '<label class="text-xs text-on-surface">Fecha de caja<input aria-label="Fecha de caja" data-fecha-caja type="date" value="' + HOY + '" class="' + INPUT + '"></label>' +
+      '<button type="button" data-consultar class="' + BTN + '">Ventas y clientes / buscar remitos</button>';
+    $('header').after(barra);
+    var fechaCaja = $('[data-fecha-caja]', barra);
+    $('[data-consultar]', barra).addEventListener('click', function () { consultarMovimientos(renderCaja); });
+    function renderCaja() {
+      MEDIOS.forEach(function (m) { tot[m] = [0, 0]; }); total = 0; n = 0; tbody.innerHTML = '';
+      var movimientos = [];
+      ventas().forEach(function (v) { pagos(v).forEach(function (p) { if (p.iso === fechaCaja.value && tot[p.medio]) movimientos.push({ v: v, p: p }); }); });
+      movimientos.sort(function (a, b) { return (a.p.hora || '').localeCompare(b.p.hora || ''); });
+      movimientos.forEach(function (mov) {
+        var v = mov.v, p = mov.p, tr = (MEDIO_ROW[p.medio] || plantilla[0]).cloneNode(true), td = $$('td', tr);
+        td[0].textContent = p.hora; td[1].textContent = v.ticket || v.remito; td[2].textContent = v.cliente; td[4].textContent = plata(p.importe);
+        var b = $('button', td[5]); b.setAttribute('aria-label', 'Ver remito ' + v.remito); b.addEventListener('click', function () { verRemito(v, renderCaja); });
+        tbody.appendChild(tr); tot[p.medio][0] += p.importe; tot[p.medio][1]++; total += p.importe; n++;
+      });
+      if (!movimientos.length) tbody.innerHTML = '<tr><td colspan="6" class="py-4 px-space-md text-on-surface-variant">Sin cobros en esta fecha. Los remitos en debe no suman caja.</td></tr>';
+      MEDIOS.forEach(function (m, i) { $('span.text-headline-md', cards[i]).textContent = plata(tot[m][0]); $('p', cards[i]).textContent = tot[m][1] + ' cobros'; });
+      $('span.text-display', cards[3]).textContent = plata(total); $('span.px-2', cards[3]).textContent = n + ' cobros'; $('tfoot td.text-right').textContent = plata(total);
+      if (esperado) esperado.textContent = plata(tot.Efectivo[0]);
+      var pie = $$('main span').filter(function (s) { return /^Mostrando/.test(s.textContent.trim()); })[0]; if (pie) pie.textContent = 'Mostrando ' + n + ' cobros de la fecha elegida';
+      var regs = $$('main span').filter(function (s) { return /registros ordenados/.test(s.textContent); })[0]; if (regs) regs.textContent = '· ' + n + ' registros ordenados por hora';
+      var fechaCab = $('header p'); if (fechaCab) fechaCab.textContent = fechaCaja.value + ' · Dinero efectivamente cobrado en el local';
+      dif();
+    }
+    fechaCaja.addEventListener('input', renderCaja);
+    renderCaja();
+    var remitoUrl = new URLSearchParams(location.search).get('remito');
+    var elegido = ventas().filter(function (v) { return v.remito === remitoUrl; })[0]; if (elegido) verRemito(elegido, renderCaja);
     $$('main button').forEach(function (b) {
       var t = b.textContent;
       if (/Cerrar caja/.test(t)) b.addEventListener('click', function () { toast('Caja cerrada · total del turno ' + plata(total)); });
@@ -816,15 +1005,8 @@
     var filas0 = $$('tr', tbody);
     var tplSin = filas0[0], tplCon = filas0[3];
     // Filas de ejemplo de Stitch → datos
-    var REM = filas0.map(function (tr) {
-      var td = $$('td', tr), f = td[0].textContent.trim().split('/');
-      return { remito: td[1].textContent.trim(), iso: f[2] + '-' + f[1] + '-' + f[0], cliente: td[2].textContent.trim(),
-        detalle: td[3].textContent.trim(), medio: td[4].textContent.trim().replace(/^\S+\s/, '').trim() || td[4].textContent.trim(),
-        total: aNum(td[5].textContent), tipo: 'empresa' };
-    });
-    REM[0].medio = 'Transferencia'; REM[1].medio = 'Transferencia'; REM[2].medio = 'Efectivo'; REM[3].medio = 'Transferencia';
+    var REM = ventas();
     if (!S.facturas['R-0231']) S.facturas['R-0231'] = 'A 0003-00000412';
-    S.ventas.forEach(function (v) { REM.push({ remito: v.remito, iso: v.iso, cliente: v.cliente, detalle: v.detalle, medio: v.medio, total: v.total, tipo: v.tipo }); });
     var estado = 'sin';
     var ESTADOS = { sin: 'Estado: Sin facturar', con: 'Estado: Facturadas', todas: 'Estado: Todas' };
 
@@ -870,9 +1052,9 @@
       tr.className = 'hover:bg-surface-container-low transition-colors';
       var td = $$('td', tr), f = r.iso.split('-');
       td[0].textContent = f[2] + '/' + f[1] + '/' + f[0];
-      td[1].textContent = r.remito; td[2].textContent = r.cliente; td[3].textContent = r.detalle;
+      td[1].textContent = r.remito; td[2].textContent = r.cliente; td[3].textContent = detalleVenta(r);
       var ico = r.medio === 'Efectivo' ? ['payments', 'text-tertiary'] : r.medio === 'Mercado Pago' ? ['qr_code_2', 'text-primary'] : ['account_balance', 'text-secondary'];
-      td[4].innerHTML = '<span class="inline-flex items-center gap-1 text-on-surface"><span class="material-symbols-outlined text-[16px] ' + ico[1] + '">' + ico[0] + '</span>' + esc(r.medio) + '</span>';
+      td[4].textContent = estadoCobro(r);
       td[5].textContent = plata(r.total);
       td[6].classList.add('whitespace-nowrap'); td[7].classList.add('whitespace-nowrap');
       if (fact) {
@@ -887,6 +1069,8 @@
       } else {
         $('button', td[7]).addEventListener('click', function () { facturar(r); });
       }
+      var ver = document.createElement('button'); ver.type = 'button'; ver.textContent = 'Ver remito'; ver.className = BTN;
+      ver.addEventListener('click', function () { verRemito(r, render); }); td[7].prepend(ver);
       return tr;
     }
     function render() {
@@ -913,7 +1097,7 @@
       cuerpo.innerHTML = '<div class="p-3 rounded bg-surface-container-low border border-outline flex flex-col gap-1">' +
         '<div class="flex justify-between"><span class="text-on-surface-variant">Cliente</span><b>' + esc(r.cliente) + '</b></div>' +
         '<div class="flex justify-between"><span class="text-on-surface-variant">CUIT</span><span>' + esc(c.cuit || '—') + '</span></div>' +
-        '<div class="flex justify-between"><span class="text-on-surface-variant">Remito</span><span>' + esc(r.remito) + ' · ' + esc(r.detalle) + '</span></div></div>' +
+        '<div class="flex justify-between"><span class="text-on-surface-variant">Remito</span><span>' + esc(r.remito) + ' · ' + esc(detalleVenta(r)) + '</span></div></div>' +
         '<div class="flex flex-col gap-1"><div class="flex justify-between"><span>Neto gravado</span><span>' + plata(neto) + '</span></div>' +
         '<div class="flex justify-between"><span>IVA 21%</span><span>' + plata(iva) + '</span></div>' +
         '<div class="flex justify-between font-headline-md text-[20px] font-bold text-primary border-t border-outline pt-2"><span>Total factura A</span><span>' + plata(r.total) + '</span></div></div>' +
@@ -940,7 +1124,7 @@
         '</style></head><body><div class="top"><div>' + (N.logo ? '<img src="' + N.logo + '" style="max-height:60px"><br>' : '<b style="font-size:22px;color:#0f7799">CLEANBOX</b><br>') +
         esc(N.direccion) + '<br>IVA Responsable Inscripto</div><div class="A">A</div><div class="r"><b>FACTURA</b><br>N° ' + esc(num.replace('A ', '')) + '<br>Fecha: ' + fechaCorta(HOY) + '/2026</div></div>' +
         '<p><b>' + esc(r.cliente) + '</b><br>CUIT ' + esc(c.cuit || '') + ' · IVA Responsable Inscripto<br>Remito ' + esc(r.remito) + '</p>' +
-        '<table><tr><th>Detalle</th><th class="r">Importe</th></tr><tr><td>' + esc(r.detalle) + '</td><td class="r">' + plata(neto) + '</td></tr>' +
+        '<table><tr><th>Detalle</th><th class="r">Importe</th></tr><tr><td>' + esc(detalleVenta(r)) + '</td><td class="r">' + plata(neto) + '</td></tr>' +
         '<tr><td class="r">Neto gravado</td><td class="r">' + plata(neto) + '</td></tr><tr><td class="r">IVA 21%</td><td class="r">' + plata(r.total - neto) + '</td></tr>' +
         '<tr><th class="r">TOTAL</th><th class="r">' + plata(r.total) + '</th></tr></table>' +
         '<div class="demo">DEMO SIN VALIDEZ FISCAL · sin CAE</div></body></html>');
