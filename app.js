@@ -250,6 +250,7 @@
         (v.descuento ? '<div class="f s"><span>Descuento</span><span>-' + plata(v.descuento) + '</span></div>' : '') +
         '<hr><div class="f tot"><span>TOTAL</span><span>' + plata(v.total) + '</span></div>' +
         '<div class="s">Medio de pago: ' + esc(v.medio) + '</div>' + (v.entrega ? '<div><b>Fecha de entrega: ' + esc(v.entrega) + '</b></div>' : '') +
+        (v.observaciones ? '<hr><div class="obs"><b>Observaciones:</b><br>' + esc(v.observaciones) + '</div>' : '') +
         '<hr><div class="c s">' + esc(N.pie) + '</div><div class="ley">' + leyenda + '</div><div class="c s">DOCUMENTO NO VÁLIDO COMO FACTURA</div></div>';
     };
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>Ticket</title><style>' +
@@ -257,6 +258,7 @@
       '.t{width:72mm;padding:4mm;page-break-after:always}.c{text-align:center}.s{font-size:10px}.marca{text-align:center;font:700 18px Arial;letter-spacing:1px}' +
       '.logo{display:block;margin:0 auto 2mm;max-width:40mm;max-height:24mm}hr{border:0;border-top:1px dashed #4b5c66;margin:2mm 0}' +
       '.f{display:flex;justify-content:space-between;gap:2mm}.tot{font-size:15px;font-weight:700}.ley{border:1px solid #17262f;text-align:center;font-weight:700;margin:2mm 0;padding:1mm}' +
+      '.f>span:first-child{min-width:0;overflow-wrap:anywhere}.f>span:last-child{white-space:nowrap}.obs{white-space:pre-wrap;overflow-wrap:anywhere}' +
       '</style></head><body>' + copia('ORIGINAL CLIENTE') + (N.duplicado ? copia('DUPLICADO LOCAL') : '') +
       '<script>window.onload=function(){window.print()}<\/script></body></html>';
     var w = window.open('', '_blank', 'width=420,height=720');
@@ -341,6 +343,7 @@
       var extra = document.createElement('div');
       extra.className = 'flex flex-col gap-4';
       extra.innerHTML = campo('Detalle <span class="text-on-surface-variant font-normal">(opcional)</span>', '<input data-det class="' + INPUT + '" placeholder="Ej. 6 bolsas · 3 camisas y 1 saco">') +
+        campo('Observaciones para el remito (opcional)', '<textarea data-obs rows="2" class="' + INPUT + '" placeholder="Ej. Camisa con mancha en el cuello; saco con forro roto"></textarea>') +
         '<div><label class="' + LABEL + '">Fecha de entrega</label><div class="flex flex-wrap items-center gap-2">' +
         '<button type="button" data-d="1" class="px-3 py-1.5 rounded border border-outline font-label-md text-[13px] text-on-surface hover:bg-surface-container">Mañana</button>' +
         '<button type="button" data-d="3" class="px-3 py-1.5 rounded border border-primary bg-primary-container text-on-primary-container font-label-md text-[13px]">En 3 días</button>' +
@@ -359,6 +362,7 @@
         { texto: 'Guardar pedido', primario: true, accion: function () {
           if (!cli) { toast('Elegí o creá el cliente', 'error'); return false; }
           var p = { n: S.sigPedido++, cliente: cli.nombre, detalle: $('[data-det]', extra).value.trim(), entrega: fechaIn.value || entrega, estado: 'recibido', hora: ahora() };
+          p.observaciones = $('[data-obs]', extra).value.trim();
           S.pedidos.unshift(p); cli.ultimo = fechaCorta(HOY); cli.ultimoNro = '#' + p.n; save(); render();
           toast('Pedido #' + p.n + ' recibido');
         } },
@@ -437,17 +441,21 @@
     var renglones = $$('div.flex.flex-col.gap-space-sm', colTicket)[0];
     var tituloRenglones = $('span', renglones).outerHTML;
     var bloqueTot = $('div.border-t.border-outline.pt-space-sm', colTicket);
+    function descripcion(it) { return it.descripcion != null ? it.descripcion : it.nombre; }
+    function unitario(it) { return it.precio != null ? it.precio : PRECIOS[it.nombre]; }
     function render() {
       // Renglones: plantilla de Stitch
       renglones.innerHTML = tituloRenglones + (items.length ? items.map(function (it, i) {
-        return '<div class="p-space-sm rounded bg-surface-container-low border border-outline flex flex-col gap-2">' +
-          '<div class="flex justify-between items-start"><span class="font-label-md text-[15px] font-bold text-on-surface">' + esc(it.nombre) + '</span>' +
-          '<span class="font-headline-md text-[16px] font-bold text-on-surface">' + plata(it.cant * PRECIOS[it.nombre]) + '</span></div>' +
-          '<div class="flex justify-between items-center text-[13px]"><span class="text-on-surface-variant">Unitario: ' + plata(PRECIOS[it.nombre]) + '</span>' +
+        return '<div data-renglon="' + i + '" class="p-space-sm rounded bg-surface-container-low border border-outline flex flex-col gap-2">' +
+          '<label class="flex flex-col gap-1 text-xs text-on-surface-variant">Descripción' +
+          '<input data-descripcion="' + i + '" aria-label="Descripción del renglón ' + (i + 1) + '" value="' + esc(descripcion(it)) + '" class="' + INPUT + ' font-bold"></label>' +
+          '<div class="flex justify-between items-center gap-2 text-[13px]"><label class="flex items-center gap-1 text-on-surface-variant">Unitario $' +
+          '<input data-precio="' + i + '" aria-label="Precio unitario del renglón ' + (i + 1) + '" type="number" min="0" step="1" value="' + esc(it.precioEntrada != null ? it.precioEntrada : unitario(it)) + '" class="w-24 min-w-0 px-2 py-1.5 bg-surface-container-lowest border border-outline rounded text-on-surface focus:outline-none focus:border-primary"></label>' +
           '<div class="flex items-center gap-2 bg-surface-container-lowest border border-outline rounded p-0.5">' +
           '<button type="button" data-menos="' + i + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container active:scale-95 text-lg font-bold">−</button>' +
           '<span class="font-headline-md text-[15px] font-bold w-5 text-center">' + it.cant + '</span>' +
-          '<button type="button" data-mas="' + i + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container active:scale-95 text-lg font-bold">+</button></div></div></div>';
+          '<button type="button" data-mas="' + i + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container active:scale-95 text-lg font-bold">+</button></div></div>' +
+          '<div class="text-right font-headline-md text-[16px] font-bold text-on-surface" data-importe>' + plata(it.cant * unitario(it)) + '</div></div>';
       }).join('') : '<p class="text-[13px] text-on-surface-variant py-space-sm">Tocá una prenda de la izquierda para sumarla.</p>');
       // Botones de la grilla: "N en ticket"
       botones.forEach(function (b) {
@@ -467,7 +475,11 @@
         }
       });
       if (lista) pintarLista();
-      var sub = items.reduce(function (a, it) { return a + it.cant * PRECIOS[it.nombre]; }, 0);
+      return totales();
+    }
+    // Al escribir se actualizan los importes sin reconstruir el campo ni perder el foco.
+    function totales() {
+      var sub = items.reduce(function (a, it) { return a + it.cant * unitario(it); }, 0);
       var desc = Math.round(sub * descPct / 100);
       var tot = totalManual != null ? totalManual : sub - desc;
       var filas = $$(':scope > div', bloqueTot);
@@ -477,6 +489,28 @@
       $(':scope > span', filas[2]).textContent = plata(tot);
       return { sub: sub, desc: desc + (totalManual != null ? sub - desc - totalManual : 0), tot: tot };
     }
+    renglones.addEventListener('input', function (e) {
+      var inp = e.target;
+      if (inp.hasAttribute('data-descripcion')) items[+inp.dataset.descripcion].descripcion = inp.value;
+      if (inp.hasAttribute('data-precio')) {
+        var it = items[+inp.dataset.precio];
+        var valido = inp.value !== '' && inp.checkValidity() && Number.isFinite(Number(inp.value));
+        inp.setAttribute('aria-invalid', String(!valido));
+        it.precioEntrada = inp.value;
+        it.precio = valido ? Number(inp.value) : 0;
+        $('[data-importe]', inp.closest('[data-renglon]')).textContent = plata(it.cant * it.precio);
+        totalManual = null; totales();
+      }
+    });
+    var agregarRenglon = document.createElement('button');
+    agregarRenglon.type = 'button';
+    agregarRenglon.className = 'px-3 py-2 border border-outline rounded text-primary font-label-md text-[13px] hover:bg-surface-container focus:outline-primary';
+    agregarRenglon.textContent = 'Agregar renglón libre';
+    renglones.after(agregarRenglon);
+    agregarRenglon.addEventListener('click', function () {
+      items.push({ nombre: '', descripcion: '', cant: 1, precio: 0 });
+      totalManual = null; render(); $('[data-descripcion="' + (items.length - 1) + '"]', renglones).focus();
+    });
     botones.forEach(function (b) {
       b.addEventListener('click', function () {
         var it = items.filter(function (x) { return x.nombre === b.dataset.item; })[0];
@@ -518,12 +552,17 @@
     function cobrar(imprimir) {
       if (!cliente) { toast('Falta el cliente', 'error'); return; }
       if (!items.length) { toast('No hay prendas en el ticket', 'error'); return; }
+      var invalido = $$('input', renglones).filter(function (inp) {
+        return inp.hasAttribute('data-descripcion') ? !inp.value.trim() : inp.value === '' || !inp.checkValidity();
+      })[0];
+      if (invalido) { toast('Completá la descripción y un precio válido en cada renglón', 'error'); invalido.focus(); return; }
       var r = render();
       var v = {
         ticket: 'T-' + ('0000' + S.sigTicket++).slice(-4), remito: 'R-' + ('0000' + S.sigRemito++).slice(-4),
         fecha: fechaCorta(HOY) + '/2026', iso: HOY, hora: ahora(), cliente: cliente.nombre, tipo: cliente.tipo, cuit: cliente.cuit || '',
-        items: items.map(function (it) { return { nombre: it.nombre, cant: it.cant, precio: PRECIOS[it.nombre] }; }),
-        detalle: items.map(function (it) { return it.cant + ' ' + it.nombre.toLowerCase(); }).join(' + '),
+        items: items.map(function (it) { return { nombre: descripcion(it).trim(), cant: it.cant, precio: unitario(it) }; }),
+        detalle: items.map(function (it) { return it.cant + ' ' + descripcion(it).trim().toLowerCase(); }).join(' + '),
+        observaciones: observaciones.value.trim(),
         descuento: r.desc, total: r.tot, medio: medio, pedido: pedido ? '#' + pedido.n : '',
         entrega: entregaIso ? (function (x) { return DIAS[x.getDay()] + ' ' + ('0' + x.getDate()).slice(-2) + '/' + ('0' + (x.getMonth() + 1)).slice(-2) + '/' + x.getFullYear(); })(d(entregaIso)) : ''
       };
@@ -533,7 +572,7 @@
       save();
       if (imprimir) imprimirTicket(v);
       toast('Venta ' + v.ticket + ' cobrada · ' + plata(v.total) + ' · ' + medio);
-      items = []; pedido = null; totalManual = null; descPct = 0; ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
+      items = []; pedido = null; totalManual = null; descPct = 0; observaciones.value = ''; ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
     }
     var cobrarBtn = $$('button', colTicket).filter(function (b) { return /Cobrar e imprimir/.test(b.textContent); })[0];
     var guardarBtn = $$('button', colTicket).filter(function (b) { return /Guardar sin imprimir/.test(b.textContent); })[0];
@@ -616,6 +655,14 @@
     $$('[data-e]', bloqueEnt).forEach(function (b) { b.addEventListener('click', function () { ponerEntrega(addDias(HOY, +b.dataset.e)); }); });
     fechaEnt.addEventListener('change', function () { if (fechaEnt.value) ponerEntrega(fechaEnt.value); });
     ponerEntrega(entregaIso);
+    var bloqueObs = document.createElement('div');
+    bloqueObs.className = 'flex flex-col gap-1.5';
+    bloqueObs.innerHTML = '<label for="observaciones-remito" class="text-[12px] font-bold text-on-surface-variant">Observaciones para el remito (opcional)</label>' +
+      '<textarea id="observaciones-remito" rows="2" class="' + INPUT + '" placeholder="Ej. Camisa manchada; saco con forro roto"></textarea>' +
+      '<span class="text-xs text-on-surface-variant">Salen impresas en la copia del cliente y del local.</span>';
+    bloqueEnt.after(bloqueObs);
+    var observaciones = $('textarea', bloqueObs);
+    observaciones.value = pedido ? pedido.observaciones || '' : '';
     var tarifario = $$('button').filter(function (b) { return /Ver tarifario completo/.test(b.textContent); })[0];
     if (tarifario) tarifario.addEventListener('click', function () { location.href = vistaPermitida('precios') ? 'precios.html' : 'venta.html'; });
     pintarCliente(); render(); nro();
