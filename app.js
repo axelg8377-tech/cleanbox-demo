@@ -7,7 +7,7 @@
   // ── Estado de la demo ──────────────────────────────────────────────
   var KEY = 'cleanbox-demo-v1';
   var HOY = '2026-10-24'; // fecha de los datos de ejemplo
-  var NO_OCULTABLES = ['pedidos', 'venta', 'caja', 'ajustes'];
+  var NO_OCULTABLES = ['pedidos', 'venta', 'remitos', 'caja', 'ajustes'];
   var SOLO_DUENO = ['facturar', 'precios', 'ajustes'];
 
   var SEED = {
@@ -138,18 +138,53 @@
   var LABEL = 'block text-xs font-label-md text-on-surface mb-1';
   function campo(label, html) { return '<div><label class="' + LABEL + '">' + label + '</label>' + html + '</div>'; }
 
-  // Remitos ficticios compartidos por Caja y Facturar. No se agregan al guardar ni al recargar.
+  // Remitos ficticios compartidos por Caja, Remitos y Empresas. No se agregan al guardar ni al recargar.
+  // "Cuenta empresa" (pedido del cliente, 25/10): el remito se emite e imprime, pero no entra en caja,
+  // no genera deuda ni pagos. El dueño junta las cantidades del mes y factura desde Empresas.
+  function remitoEmpresa(remito, iso, hora, clienteId, cliente, items, extra) {
+    var r = { remito: remito, ticket: 'T-' + remito.slice(2), iso: iso, hora: hora, clienteId: clienteId, cliente: cliente, tipo: 'empresa',
+      items: items.map(function (it) { return { nombre: it[0], cant: it[1], precio: it[2] }; }), pagos: [], medio: 'Empresa', cuentaEmpresa: true };
+    r.total = r.items.reduce(function (n, it) { return n + it.cant * it.precio; }, 0);
+    Object.keys(extra || {}).forEach(function (k) { r[k] = extra[k]; });
+    return r;
+  }
   var EJEMPLOS = [
-    { remito: 'R-0228', ticket: 'T-0414', iso: '2026-10-23', hora: '10:05', cliente: 'Bodega Cerro Negro', tipo: 'empresa',
-      items: [{ nombre: 'Camisa', cant: 6, precio: 2500 }, { nombre: 'Pantalón', cant: 2, precio: 3000 }], total: 21000, pagos: [], observaciones: 'Una camisa con mancha en el cuello.' },
-    { remito: 'R-0229', ticket: 'T-0415', iso: HOY, hora: '09:20', cliente: 'Bodega Piedra Alta', tipo: 'empresa',
-      items: [{ nombre: 'Bolsa de lavado institucional', cant: 6, precio: 6500 }], total: 39000, pagos: [] },
+    remitoEmpresa('R-0198', '2026-09-26', '09:10', 'c1', 'Bodega Piedra Alta', [['Mantel', 11, 4000], ['Servilleta', 70, 600]]),
+    remitoEmpresa('R-0201', '2026-10-02', '09:30', 'c1', 'Bodega Piedra Alta', [['Mantel', 12, 4000], ['Servilleta', 80, 600]]),
+    remitoEmpresa('R-0204', '2026-10-06', '10:15', 'c2', 'Bodega Cerro Negro', [['Mantel', 8, 4000], ['Servilleta', 50, 600], ['Trapo de cocina', 20, 500]]),
+    remitoEmpresa('R-0207', '2026-10-09', '08:50', 'c1', 'Bodega Piedra Alta', [['Mantel', 10, 4000], ['Servilleta', 60, 600], ['Trapo de cocina', 15, 500]]),
+    remitoEmpresa('R-0212', '2026-10-14', '11:20', 'c3', 'Finca Los Olivos', [['Bolsa de lavado institucional', 4, 6500], ['Mantel', 6, 4000]]),
+    remitoEmpresa('R-0215', '2026-10-16', '09:05', 'c1', 'Bodega Piedra Alta', [['Mantel', 14, 4000], ['Servilleta', 90, 600], ['Trapo de cocina', 25, 500]], { observaciones: 'Dos manteles con manchas de vino.' }),
+    remitoEmpresa('R-0219', '2026-10-21', '10:40', 'c2', 'Bodega Cerro Negro', [['Mantel', 9, 0], ['Servilleta', 40, 0]], { sinPrecios: true }),
+    remitoEmpresa('R-0228', '2026-10-23', '10:05', 'c2', 'Bodega Cerro Negro', [['Camisa', 6, 2500], ['Pantalón', 2, 3000]], { observaciones: 'Una camisa con mancha en el cuello.' }),
+    remitoEmpresa('R-0229', HOY, '09:20', 'c1', 'Bodega Piedra Alta', [['Bolsa de lavado institucional', 6, 6500]]),
     { remito: 'R-0230', ticket: 'T-0416', iso: HOY, hora: '09:45', cliente: 'Lucía Ferreyra', tipo: 'particular',
       items: [{ nombre: 'Camisa', cant: 2, precio: 2500 }], total: 5000, pagos: [{ iso: HOY, hora: '09:45', medio: 'Efectivo', importe: 2000 }] },
+    // Empresa que pagó en el mostrador: venta normal, entra en caja.
     { remito: 'R-0231', ticket: 'T-0417', iso: HOY, hora: '10:00', cliente: 'Hotel Cordillera', tipo: 'empresa',
       items: [{ nombre: 'Mantel', cant: 10, precio: 4000 }], total: 40000, pagos: [{ iso: HOY, hora: '10:00', medio: 'Transferencia', importe: 40000 }] }
   ];
+  var FACTURAS_EJEMPLO = [{ numero: 'A 0003-00000412', tipo: 'A', clienteId: 'c4', cliente: 'Hotel Cordillera', cuit: '30-71555444-0', iso: HOY, hora: '10:20',
+    renglones: [{ nombre: 'Mantel', cant: 10, precio: 4000 }], observaciones: 'Corresponde a remito R-0231.', oc: '', periodo: '', remitos: ['R-0231'], total: 40000 }];
+  var DATOS = 2; // versión de los datos de ejemplo
   if (!S.remitosEjemplo) S.remitosEjemplo = JSON.parse(JSON.stringify(EJEMPLOS));
+  if (S.datos !== DATOS) {
+    // Quien ya abrió la demo conserva lo que cargó; se suman los ejemplos nuevos y se pasan a
+    // cuenta empresa los remitos de empresa que quedaron "Debe" sin ningún pago.
+    EJEMPLOS.forEach(function (e) {
+      var x = S.remitosEjemplo.filter(function (r) { return r.remito === e.remito; })[0];
+      if (!x) S.remitosEjemplo.push(JSON.parse(JSON.stringify(e)));
+      else if (e.cuentaEmpresa && !pagos(x).length) { x.cuentaEmpresa = true; x.medio = 'Empresa'; x.clienteId = x.clienteId || e.clienteId; }
+    });
+    S.remitosEjemplo.sort(function (a, b) { return a.remito < b.remito ? -1 : 1; });
+    S.ventas.forEach(function (v) { if (v.tipo === 'empresa' && Array.isArray(v.pagos) && !v.pagos.length) { v.cuentaEmpresa = true; v.medio = 'Empresa'; } });
+    [['Servilleta', 600, true, 'dinner_dining'], ['Trapo de cocina', 500, false, 'texture']].forEach(function (p) {
+      if (!S.precios.some(function (x) { return norm(x.nombre) === norm(p[0]); })) S.precios.push({ nombre: p[0], precio: p[1], rapida: p[2], icono: p[3] });
+    });
+    if (!S.facturasEmitidas) S.facturasEmitidas = JSON.parse(JSON.stringify(FACTURAS_EJEMPLO));
+    if (!S.sigFacturaB) S.sigFacturaB = 128;
+    S.datos = DATOS; save();
+  }
   function ventas() { return S.remitosEjemplo.concat(S.ventas); }
   function pagos(v) {
     // Compatibilidad: un arreglo vacío es deuda; sólo ventas antiguas sin campo eran cobros completos.
@@ -157,8 +192,9 @@
       ? [{ iso: v.iso, hora: v.hora, medio: v.medio, importe: v.total }] : []);
   }
   function cobrado(v) { return pagos(v).reduce(function (n, p) { return n + p.importe; }, 0); }
-  function saldo(v) { return Math.max(0, v.total - cobrado(v)); }
-  function estadoCobro(v) { return saldo(v) === 0 ? 'Pagado' : cobrado(v) ? 'Pago parcial' : 'Debe / cuenta corriente'; }
+  function saldo(v) { return v.cuentaEmpresa ? 0 : Math.max(0, v.total - cobrado(v)); }
+  function estadoCobro(v) { return v.cuentaEmpresa ? 'Cuenta empresa' : saldo(v) === 0 ? 'Pagado' : cobrado(v) ? 'Pago parcial' : 'Debe / cuenta corriente'; }
+  function esDueno() { return S.usuario === 'hernan'; }
   function detalleVenta(v) { return v.items ? v.items.map(function (it) { return it.cant + ' ' + it.nombre; }).join(' + ') : v.detalle || ''; }
   function ventaPedido(p) { return p && ventas().filter(function (v) { return v.pedido === '#' + p.n; })[0]; }
   function fechaValida(iso) { return /^\d{4}-\d{2}-\d{2}$/.test(iso) && !isNaN(d(iso).getTime()) && fechaCorta(iso) === iso.slice(8, 10) + '/' + iso.slice(5, 7); }
@@ -223,7 +259,8 @@
     return { coincide: coincide, error: invalido, resumen: resumen, activo: function () { return !!(articulo.value.trim() || min.value !== '' || max.value !== ''); } };
   }
 
-  function formularioPago(obtenerTotal, inicial) {
+  // permiteEmpresa: función que dice si el cliente actual es empresa (sólo ahí aparece "Empresa").
+  function formularioPago(obtenerTotal, inicial, permiteEmpresa, alCambiarModo) {
     var box = document.createElement('div'), modo = inicial || 'Debe', valores = {};
     box.className = 'flex flex-col gap-2';
     box.innerHTML = '<span class="text-xs font-bold text-on-surface-variant">Forma de pago</span><div data-modos class="flex flex-wrap gap-1"></div>' +
@@ -233,14 +270,15 @@
       label.innerHTML = esc(m) + '<input aria-label="Importe en ' + esc(m) + '" type="number" min="0" step="1" value="0" class="w-28 px-2 py-1.5 bg-background border border-outline rounded focus:border-primary">';
       valores[m] = $('input', label); valores[m].addEventListener('input', actualizar); $('[data-importes]', box).appendChild(label);
     });
-    ['Debe'].concat(MEDIOS, ['Parcial / combinado']).forEach(function (m) {
+    (permiteEmpresa ? ['Empresa'] : []).concat(['Debe'], MEDIOS, ['Parcial / combinado']).forEach(function (m) {
       var b = document.createElement('button'); b.type = 'button'; b.textContent = m; b.className = BTN;
+      if (m === 'Empresa') b.dataset.modoEmpresa = '';
       b.addEventListener('click', function () { modo = m; actualizar(); }); $('[data-modos]', box).appendChild(b);
     });
     function leer() {
       var total = obtenerTotal(), lista = [];
       if (!importeValido(total)) return null;
-      if (modo === 'Debe') return [];
+      if (modo === 'Debe' || modo === 'Empresa') return [];
       if (modo !== 'Parcial / combinado') return total > 0 ? [{ medio: modo, importe: total }] : [];
       var invalido = MEDIOS.some(function (m) { var el = valores[m]; return el.value === '' || !el.checkValidity() || !importeValido(Number(el.value)); });
       if (invalido) return null;
@@ -249,13 +287,23 @@
       return importeValido(suma) && suma > 0 && suma <= total ? lista : null;
     }
     function actualizar() {
-      $$('button', $('[data-modos]', box)).forEach(function (b) { b.setAttribute('aria-pressed', String(b.textContent === modo)); b.classList.toggle('bg-primary-container', b.textContent === modo); });
+      var empresa = !!(permiteEmpresa && permiteEmpresa()), anterior = modo;
+      if (modo === 'Empresa' && !empresa) modo = 'Efectivo';
+      $$('button', $('[data-modos]', box)).forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.textContent === modo)); b.classList.toggle('bg-primary-container', b.textContent === modo);
+        if (b.hasAttribute('data-modo-empresa')) b.classList.toggle('hidden', !empresa);
+      });
       $('[data-importes]', box).classList.toggle('hidden', modo !== 'Parcial / combinado');
       var lista = leer(), suma = lista ? lista.reduce(function (n, p) { return n + p.importe; }, 0) : 0;
-      $('[data-saldo]', box).textContent = lista ? 'Paga ahora: ' + plata(suma) + ' · Queda debiendo: ' + plata(obtenerTotal() - suma) : 'Revisá los importes: deben ser positivos y no superar el saldo.';
+      $('[data-saldo]', box).textContent = modo === 'Empresa' ? 'Remito de empresa: no entra en la caja ni queda como deuda. Se factura desde Empresas.'
+        : lista ? 'Paga ahora: ' + plata(suma) + ' · Queda debiendo: ' + plata(obtenerTotal() - suma) : 'Revisá los importes: deben ser positivos y no superar el saldo.';
+      box.dataset.modo = modo;
+      if (alCambiarModo && anterior !== undefined) alCambiarModo(modo);
     }
     actualizar();
-    return { elemento: box, leer: leer, actualizar: actualizar, reiniciar: function () { modo = 'Debe'; MEDIOS.forEach(function (m) { valores[m].value = 0; }); actualizar(); } };
+    return { elemento: box, leer: leer, actualizar: actualizar, modo: function () { return modo; },
+      poner: function (m) { modo = m; actualizar(); },
+      reiniciar: function (m) { modo = m || 'Debe'; MEDIOS.forEach(function (x) { valores[x].value = 0; }); actualizar(); } };
   }
 
   function registrarPago(v, alGuardar) {
@@ -282,8 +330,12 @@
       (v.items || []).map(function (it) { return '<tr class="border-b border-outline"><td class="py-2">' + esc(it.nombre) + '</td><td class="text-center">' + it.cant + '</td><td class="text-right">' + plata(it.precio) + '</td><td class="text-right">' + plata(it.cant * it.precio) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
       (!v.items ? '<p>' + esc(v.detalle) + '</p>' : '') +
       (v.observaciones ? '<p class="text-sm text-on-surface whitespace-pre-wrap break-words"><b>Observaciones:</b> ' + esc(v.observaciones) + '</p>' : '') +
-      resumenImportes(v.total, cobrado(v), saldo(v)) + '<p class="text-sm text-on-surface-variant">' + estadoCobro(v) + '</p>' +
-      '<div class="text-sm text-on-surface"><b>Historial de pagos</b>' + (pagos(v).length ? pagos(v).map(function (p) { return '<p>' + esc(p.iso) + ' · ' + esc(p.medio) + ' · ' + plata(p.importe) + '</p>'; }).join('') : '<p>Sin pagos registrados.</p>') + '</div>';
+      (v.cuentaEmpresa
+        ? '<div data-cb-cuenta-empresa class="p-3 rounded border border-outline flex flex-col gap-1"><b class="text-on-surface">Remito de empresa</b>' +
+          '<span class="text-sm text-on-surface-variant">No entra en la caja ni genera deuda. Total informativo del remito: <b data-cb-importe="total">' + plata(v.total) + '</b></span></div>' +
+          (v.correcciones && v.correcciones.length ? '<p class="text-xs text-on-surface-variant">' + v.correcciones.map(function (c) { return 'Corregido el ' + esc(fechaCorta(c.iso)) + ' a las ' + esc(c.hora) + ' por ' + esc(c.usuario); }).join(' · ') + '</p>' : '')
+        : resumenImportes(v.total, cobrado(v), saldo(v)) + '<p class="text-sm text-on-surface-variant">' + estadoCobro(v) + '</p>' +
+          '<div class="text-sm text-on-surface"><b>Historial de pagos</b>' + (pagos(v).length ? pagos(v).map(function (p) { return '<p>' + esc(p.iso) + ' · ' + esc(p.medio) + ' · ' + plata(p.importe) + '</p>'; }).join('') : '<p>Sin pagos registrados.</p>') + '</div>');
     var presentacion = document.createElement('label'); presentacion.className = 'text-sm text-on-surface flex items-center gap-2';
     presentacion.innerHTML = '<input data-sin-precios type="checkbox"> Remito sin precios (impresión y PDF)';
     $('input', presentacion).checked = !!v.sinPrecios;
@@ -293,6 +345,9 @@
     formato.textContent = 'PDF en hoja A4, una copia. Abrilo para ver e imprimir, o descargalo para enviar.'; cuerpo.appendChild(formato);
     var acciones = [{ texto: 'Ver e imprimir A4', accion: function () { descargarRemito(v, true); return false; } }, { texto: 'Descargar remito PDF', accion: function () { descargarRemito(v); return false; } }, { texto: 'Imprimir ticket (80 mm)', accion: function () { imprimirTicket(v); } }];
     if (saldo(v) > 0) acciones.unshift({ texto: 'Registrar pago', primario: true, accion: function () { registrarPago(v, function () { ventana.cerrar(); verRemito(v, alCambiar); if (alCambiar) alCambiar(); }); return false; } });
+    if (v.cuentaEmpresa) acciones.unshift({ texto: 'Corregir remito', primario: true, accion: function () { corregirRemito(v, function () { ventana.cerrar(); verRemito(v, alCambiar); if (alCambiar) alCambiar(); }); return false; } });
+    if (esDueno() && vistaPermitida('facturar') && v.items && v.items.length) acciones.push({ texto: 'Facturar este remito', accion: function () {
+      ventana.cerrar(); abrirFactura({ cliente: clienteRegistro(v), renglones: v.items, observaciones: 'Corresponde a remito ' + v.remito + '.', remitos: [v.remito] }); return false; } });
     var p = S.pedidos.filter(function (p0) { return v.pedido === '#' + p0.n; })[0];
     if (p && p.estado === 'listo') acciones.push({ texto: 'Entregar pedido', accion: function () {
       p.estado = 'entregado'; p.entregadoIso = HOY;
@@ -303,6 +358,195 @@
     var ventana = modal('Detalle del remito', cuerpo, acciones);
     $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[680px]');
     $('[data-pie]', ventana).classList.add('flex-wrap');
+  }
+
+  // ── Corregir un remito de empresa (empleadas y dueño) ─────────────
+  // Sólo cuenta empresa: no tiene pagos ni toca la caja, así que corregirlo no altera dinero.
+  function corregirRemito(v, alGuardar) {
+    var renglones = JSON.parse(JSON.stringify(v.items || []));
+    var pct = v.descuentoPct != null ? v.descuentoPct : (v.descuento && v.total + v.descuento > 0 ? v.descuento * 100 / (v.total + v.descuento) : 0);
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3'; cuerpo.setAttribute('data-corregir', '');
+    cuerpo.innerHTML = '<p class="text-on-surface"><b>' + esc(v.cliente) + '</b> · ' + esc(v.remito) + ' · ' + esc(fechaCorta(v.iso)) + '</p>' +
+      '<p class="text-xs text-on-surface-variant">Corregí prendas, cantidades o precios. El remito sigue fuera de la caja; al guardar, volvé a imprimirlo.</p>' +
+      '<div class="grid gap-2 text-xs font-bold text-on-surface-variant" style="grid-template-columns:minmax(0,1fr) 76px 96px 32px"><span>Prenda o servicio</span><span>Cant.</span><span>Unit. $</span><span></span></div>' +
+      '<div data-corr-items class="flex flex-col gap-2"></div>' +
+      '<div class="flex flex-wrap gap-2"><select data-corr-lista aria-label="Prenda de la lista para agregar" class="' + INPUT + '" style="flex:1 1 200px;width:auto">' +
+      S.precios.map(function (p) { return '<option>' + esc(p.nombre) + '</option>'; }).join('') + '</select>' +
+      '<button type="button" data-corr-agregar class="' + BTN + '">Agregar de la lista</button><button type="button" data-corr-libre class="' + BTN + '">Renglón libre</button></div>' +
+      campo('Observaciones', '<textarea data-corr-obs rows="2" class="' + INPUT + '"></textarea>') +
+      '<p data-corr-total role="status" class="font-label-md text-sm text-on-surface"></p>';
+    var lista = $('[data-corr-items]', cuerpo), obs = $('[data-corr-obs]', cuerpo);
+    obs.value = v.observaciones || '';
+    function valido(r) { return !!String(r.nombre).trim() && Number.isSafeInteger(r.cant) && r.cant > 0 && importeValido(r.precio) && importeValido(r.cant * r.precio); }
+    function total() {
+      var sub = renglones.reduce(function (n, r) { return n + (valido(r) ? r.cant * r.precio : 0); }, 0), desc = Math.round(sub * pct / 100);
+      $('[data-corr-total]', cuerpo).textContent = !renglones.length ? 'Agregá al menos una prenda.' : renglones.every(valido)
+        ? 'Unidades: ' + renglones.reduce(function (n, r) { return n + r.cant; }, 0) + ' · Total informativo: ' + plata(sub - desc) + (desc ? ' (descuento ' + Math.round(pct) + '%)' : '')
+        : 'Revisá los renglones: descripción, cantidad entera mayor a cero y precio desde $0.';
+      return { sub: sub, desc: desc };
+    }
+    function pintar() {
+      lista.innerHTML = renglones.map(function (r, i) {
+        return '<div data-corr-renglon class="grid gap-2 items-center" style="grid-template-columns:minmax(0,1fr) 76px 96px 32px">' +
+          '<input data-corr-nombre="' + i + '" aria-label="Prenda del renglón ' + (i + 1) + '" value="' + esc(r.nombre) + '" class="' + INPUT + ' font-bold">' +
+          '<input data-corr-cant="' + i + '" aria-label="Cantidad del renglón ' + (i + 1) + '" type="number" min="1" step="1" inputmode="numeric" value="' + (r.cant > 0 ? r.cant : '') + '" class="' + INPUT + ' text-center font-bold" style="padding-inline:4px">' +
+          '<input data-corr-precio="' + i + '" aria-label="Precio unitario del renglón ' + (i + 1) + '" type="number" min="0" step="1" value="' + r.precio + '" class="' + INPUT + '" style="padding-inline:6px">' +
+          '<button type="button" data-corr-quitar="' + i + '" aria-label="Quitar renglón ' + (i + 1) + '" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">close</span></button></div>';
+      }).join(''); total();
+    }
+    lista.addEventListener('input', function (e) {
+      var t = e.target, i;
+      if (t.hasAttribute('data-corr-nombre')) renglones[+t.dataset.corrNombre].nombre = t.value;
+      if (t.hasAttribute('data-corr-cant')) { i = +t.dataset.corrCant; renglones[i].cant = t.value === '' ? NaN : Number(t.value); }
+      if (t.hasAttribute('data-corr-precio')) { i = +t.dataset.corrPrecio; renglones[i].precio = t.value === '' ? NaN : Number(t.value); }
+      t.setAttribute('aria-invalid', String(t.value === '' || !t.checkValidity())); total();
+    });
+    lista.addEventListener('click', function (e) { var b = e.target.closest('[data-corr-quitar]'); if (b) { renglones.splice(+b.dataset.corrQuitar, 1); pintar(); } });
+    $('[data-corr-agregar]', cuerpo).addEventListener('click', function () {
+      var n = $('[data-corr-lista]', cuerpo).value, r = renglones.filter(function (x) { return x.nombre === n; })[0];
+      if (r) { r.cant = (r.cant > 0 ? r.cant : 0) + 1; pintar(); $('[data-corr-cant="' + renglones.indexOf(r) + '"]', lista).focus(); }
+      else { renglones.push({ nombre: n, cant: 1, precio: precioDe(n) }); pintar(); $('[data-corr-cant="' + (renglones.length - 1) + '"]', lista).focus(); }
+    });
+    $('[data-corr-libre]', cuerpo).addEventListener('click', function () { renglones.push({ nombre: '', cant: 1, precio: 0 }); pintar(); $('[data-corr-nombre="' + (renglones.length - 1) + '"]', lista).focus(); });
+    pintar();
+    var ventana = modal('Corregir remito ' + v.remito, cuerpo, [{ texto: 'Guardar corrección', primario: true, accion: function () {
+      if (!renglones.length || !renglones.every(valido)) { toast('Revisá prendas, cantidades y precios', 'error'); return false; }
+      var t = total(), antes = JSON.stringify(v);
+      v.items = renglones.map(function (r) { return { nombre: String(r.nombre).trim(), cant: r.cant, precio: r.precio }; });
+      v.descuento = t.desc; v.total = t.sub - t.desc; v.descuentoPct = pct; v.observaciones = obs.value.trim();
+      v.detalle = v.items.map(function (r) { return r.cant + ' ' + r.nombre.toLowerCase(); }).join(' + ');
+      v.correcciones = (v.correcciones || []).concat([{ iso: HOY, hora: ahora(), usuario: USUARIOS[S.usuario][0].split(' · ')[0] }]);
+      if (!save()) { var previo = JSON.parse(antes); Object.keys(v).forEach(function (k) { delete v[k]; }); Object.keys(previo).forEach(function (k) { v[k] = previo[k]; }); toast('No se pudo guardar la corrección. Volvé a intentar.', 'error'); return false; }
+      toast('Remito ' + v.remito + ' corregido. Volvé a imprimirlo si hace falta.'); if (alGuardar) alGuardar();
+    } }, { texto: 'Cancelar', accion: function () {} }]);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[680px]');
+  }
+
+  // ── Facturas (sólo dueño): mensual por cantidades, libre o de un remito ──
+  function plata2(n) { return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function centavos(n) { return Math.round(n * 100) / 100; }
+  function tipoFactura(c) { return c && c.tipo === 'empresa' ? 'A' : 'B'; }
+  function importesFactura(f) {
+    var total = f.renglones.reduce(function (n, r) { return n + r.cant * r.precio; }, 0);
+    var neto = f.tipo === 'A' ? centavos(total / 1.21) : total;
+    return { total: total, neto: neto, iva: f.tipo === 'A' ? centavos(total - neto) : 0 };
+  }
+  function abrirFactura(datos) {
+    datos = datos || {};
+    var cliente = datos.cliente || null;
+    var renglones = (datos.renglones || []).map(function (r) { return { nombre: r.nombre, cant: r.cant, precio: r.precio }; });
+    if (!renglones.length) renglones.push({ nombre: '', cant: 1, precio: 0 });
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3 text-[14px]'; cuerpo.setAttribute('data-factura-form', '');
+    cuerpo.innerHTML = '<div data-fac-cliente class="p-3 rounded border border-outline flex flex-wrap items-center justify-between gap-2">' +
+      '<div class="min-w-0"><span data-fac-tipo class="text-xs font-bold text-primary"></span><div data-fac-nombre class="font-label-md text-on-surface"></div><div data-fac-sub class="text-xs text-on-surface-variant"></div></div>' +
+      '<button type="button" data-fac-cambiar class="' + BTN + '">Cambiar cliente</button></div>' +
+      '<div class="grid grid-cols-2 gap-2">' + campo('Período facturado (opcional)', '<input data-fac-periodo class="' + INPUT + '" placeholder="Ej. 01/10/2026 al 31/10/2026">') +
+      campo('Orden de compra (opcional)', '<input data-fac-oc class="' + INPUT + '" placeholder="Ej. OC 4512">') + '</div>' +
+      '<div class="overflow-x-auto"><table class="w-full text-sm text-on-surface" style="table-layout:fixed"><thead><tr>' +
+      '<th class="text-left" style="width:44%">Descripción</th><th style="width:13%">Cant.</th><th style="width:20%">Unit. con IVA</th><th class="text-right" style="width:17%">Subtotal</th><th style="width:6%"></th></tr></thead><tbody data-fac-renglones></tbody></table></div>' +
+      '<div class="flex flex-wrap gap-2"><select data-fac-lista aria-label="Prenda de la lista para agregar" class="' + INPUT + '" style="flex:1 1 200px;width:auto">' +
+      S.precios.map(function (p) { return '<option>' + esc(p.nombre) + '</option>'; }).join('') + '</select>' +
+      '<button type="button" data-fac-agregar class="' + BTN + '">Agregar de la lista</button><button type="button" data-fac-libre class="' + BTN + '">Renglón libre</button></div>' +
+      campo('Observaciones (salen impresas en la factura)', '<textarea data-fac-obs rows="3" class="' + INPUT + '" placeholder="Ej. Corresponde a remitos R-0201, R-0207…"></textarea>') +
+      '<div data-fac-totales class="self-end w-full max-w-[320px] flex flex-col gap-1"></div>' +
+      '<p class="text-xs text-on-surface-variant">Precios con IVA incluido. Demo: no se envía a ARCA; en el sistema real se pide el CAE y se guarda el PDF.</p>';
+    var tbody = $('[data-fac-renglones]', cuerpo);
+    $('[data-fac-periodo]', cuerpo).value = datos.periodo || ''; $('[data-fac-oc]', cuerpo).value = datos.oc || ''; $('[data-fac-obs]', cuerpo).value = datos.observaciones || '';
+    function valido(r) { return !!String(r.nombre).trim() && Number.isSafeInteger(r.cant) && r.cant > 0 && importeValido(r.precio) && importeValido(r.cant * r.precio); }
+    function pintarCliente() {
+      var t = tipoFactura(cliente);
+      $('[data-fac-tipo]', cuerpo).textContent = cliente ? (t === 'A' ? 'Factura A · Responsable Inscripto' : 'Factura B · Consumidor final') : 'Falta el cliente';
+      $('[data-fac-nombre]', cuerpo).textContent = cliente ? cliente.nombre : 'Elegí a quién se factura';
+      $('[data-fac-sub]', cuerpo).textContent = cliente ? (cliente.tipo === 'empresa' ? 'CUIT ' + cliente.cuit : 'Tel ' + (cliente.tel || '—')) : '';
+      totales();
+    }
+    function totales() {
+      var f = { tipo: tipoFactura(cliente), renglones: renglones.filter(valido) }, im = importesFactura(f), ok = renglones.length && renglones.every(valido);
+      $('[data-fac-totales]', cuerpo).innerHTML = (f.tipo === 'A' ? '<div class="flex justify-between"><span>Neto gravado</span><span>' + plata2(im.neto) + '</span></div><div class="flex justify-between"><span>IVA 21%</span><span>' + plata2(im.iva) + '</span></div>' : '') +
+        '<div class="flex justify-between items-baseline border-t border-outline pt-2"><b>Total factura ' + f.tipo + '</b><b data-fac-total data-cb-importe="total" style="font-size:22px">' + (ok ? plata(im.total) : 'Revisá los renglones') + '</b></div>';
+    }
+    function pintar() {
+      tbody.innerHTML = renglones.map(function (r, i) {
+        return '<tr class="border-b border-outline"><td class="py-1.5 pr-2"><input data-fac-nombre-r="' + i + '" aria-label="Descripción del renglón ' + (i + 1) + '" value="' + esc(r.nombre) + '" class="' + INPUT + ' font-bold"></td>' +
+          '<td class="py-1.5 pr-2"><input data-fac-cant="' + i + '" aria-label="Cantidad del renglón ' + (i + 1) + '" type="number" min="1" step="1" inputmode="numeric" value="' + (r.cant > 0 ? r.cant : '') + '" class="' + INPUT + ' text-center font-bold" style="padding-inline:4px"></td>' +
+          '<td class="py-1.5 pr-2"><input data-fac-precio="' + i + '" aria-label="Precio unitario con IVA del renglón ' + (i + 1) + '" type="number" min="0" step="1" value="' + (importeValido(r.precio) ? r.precio : '') + '" class="' + INPUT + '" style="padding-inline:6px"></td>' +
+          '<td class="py-1.5 text-right" data-fac-sub-r="' + i + '" data-cb-importe="total">' + (valido(r) ? plata(r.cant * r.precio) : '—') + '</td>' +
+          '<td class="py-1.5 text-right"><button type="button" data-fac-quitar="' + i + '" aria-label="Quitar renglón ' + (i + 1) + '" class="w-8 h-8 inline-flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">close</span></button></td></tr>';
+      }).join(''); totales();
+    }
+    tbody.addEventListener('input', function (e) {
+      var t = e.target, i = +(t.dataset.facNombreR || t.dataset.facCant || t.dataset.facPrecio), r = renglones[i];
+      if (t.hasAttribute('data-fac-nombre-r')) r.nombre = t.value;
+      if (t.hasAttribute('data-fac-cant')) r.cant = t.value === '' ? NaN : Number(t.value);
+      if (t.hasAttribute('data-fac-precio')) r.precio = t.value === '' ? NaN : Number(t.value);
+      t.setAttribute('aria-invalid', String(t.value === '' || !t.checkValidity()));
+      $('[data-fac-sub-r="' + i + '"]', tbody).textContent = valido(r) ? plata(r.cant * r.precio) : '—'; totales();
+    });
+    tbody.addEventListener('click', function (e) { var b = e.target.closest('[data-fac-quitar]'); if (b) { renglones.splice(+b.dataset.facQuitar, 1); pintar(); } });
+    $('[data-fac-agregar]', cuerpo).addEventListener('click', function () { var n = $('[data-fac-lista]', cuerpo).value; renglones.push({ nombre: n, cant: 1, precio: precioDe(n) }); pintar(); $('[data-fac-cant="' + (renglones.length - 1) + '"]', tbody).focus(); });
+    $('[data-fac-libre]', cuerpo).addEventListener('click', function () { renglones.push({ nombre: '', cant: 1, precio: 0 }); pintar(); $('[data-fac-nombre-r="' + (renglones.length - 1) + '"]', tbody).focus(); });
+    $('[data-fac-cambiar]', cuerpo).addEventListener('click', function () {
+      var elegido = null;
+      modal('Cliente de la factura', selectorCliente(function (c) { elegido = c; }), [
+        { texto: 'Usar este cliente', primario: true, accion: function () { if (!elegido) { toast('Elegí o creá el cliente', 'error'); return false; } cliente = elegido; pintarCliente(); } },
+        { texto: 'Cancelar', accion: function () {} }]);
+    });
+    pintar(); pintarCliente();
+    var emitida = false;
+    var ventana = modal(datos.titulo || 'Armar factura', cuerpo, [{ texto: 'Emitir factura', primario: true, accion: function () {
+      if (emitida) return false;
+      if (!cliente) { toast('Elegí el cliente de la factura', 'error'); return false; }
+      if (!renglones.length || !renglones.every(valido)) { toast('Revisá descripción, cantidad y precio de cada renglón', 'error'); return false; }
+      var tipo = tipoFactura(cliente), f = { tipo: tipo, clienteId: cliente.id, cliente: cliente.nombre, cuit: cliente.cuit || '', iso: HOY, hora: ahora(),
+        renglones: renglones.map(function (r) { return { nombre: String(r.nombre).trim(), cant: r.cant, precio: r.precio }; }),
+        observaciones: $('[data-fac-obs]', cuerpo).value.trim(), oc: $('[data-fac-oc]', cuerpo).value.trim(), periodo: $('[data-fac-periodo]', cuerpo).value.trim(), remitos: datos.remitos || [] };
+      f.total = importesFactura(f).total;
+      if (!(f.total > 0)) { toast('El total de la factura tiene que ser mayor a cero', 'error'); return false; }
+      var antes = { a: S.sigFactura, b: S.sigFacturaB };
+      f.numero = tipo + ' 0003-' + ('00000000' + (tipo === 'A' ? S.sigFactura++ : S.sigFacturaB++)).slice(-8);
+      S.facturasEmitidas = S.facturasEmitidas || []; S.facturasEmitidas.push(f);
+      if (!save()) { S.facturasEmitidas.pop(); S.sigFactura = antes.a; S.sigFacturaB = antes.b; toast('No se pudo guardar la factura. Volvé a intentar.', 'error'); return false; }
+      emitida = true; ventana.cerrar(); toast('Factura ' + f.numero + ' emitida (demo)'); mostrarFactura(f); if (datos.alEmitir) datos.alEmitir(f); return false;
+    } }, { texto: 'Cancelar', accion: function () {} }]);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[860px]');
+    return ventana;
+  }
+  function enviarFactura(f) {
+    facturaPDF(f).then(function (ok) {
+      if (!ok) return;
+      location.href = 'mailto:?subject=' + encodeURIComponent('Factura ' + f.numero + ' · CLEANBOX') + '&body=' + encodeURIComponent('Hola, te enviamos la factura ' + f.numero + ' por ' + plata(f.total) + (f.periodo ? ' (período ' + f.periodo + ')' : '') + '. Va adjunta en PDF.\n\nCLEANBOX Tintorería');
+      toast('PDF descargado: adjuntalo en el mail');
+    });
+  }
+  function mostrarFactura(f) {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-2';
+    cuerpo.innerHTML = '<p class="text-on-surface"><b data-cb-numero>' + esc(f.numero) + '</b> · ' + esc(f.cliente) + '</p>' +
+      '<p class="text-on-surface">Total: <b data-cb-importe="total">' + plata(f.total) + '</b></p>' +
+      '<p class="text-xs text-on-surface-variant">PDF en hoja A4 con el logo. Abrilo para ver e imprimir, descargalo o mandalo por mail.</p>';
+    modal('Factura emitida', cuerpo, [{ texto: 'Ver e imprimir A4', primario: true, accion: function () { facturaPDF(f, true); return false; } },
+      { texto: 'Descargar PDF', accion: function () { facturaPDF(f); return false; } }, { texto: 'Enviar por mail', accion: function () { enviarFactura(f); return false; } },
+      { texto: 'Cerrar', accion: function () {} }]);
+    $('[data-pie]', $$('[data-modal]').pop()).classList.add('flex-wrap');
+  }
+  function verFacturas(clienteId) {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3';
+    cuerpo.innerHTML = '<input data-fac-buscar aria-label="Buscar factura" placeholder="Buscar por cliente o número" class="' + INPUT + '">' +
+      '<div class="overflow-x-auto"><table class="w-full text-sm text-on-surface"><thead><tr><th class="text-left">Número</th><th class="text-left">Fecha</th><th class="text-left">Cliente</th><th class="text-right">Total</th><th></th></tr></thead><tbody></tbody></table></div>';
+    var buscar = $('[data-fac-buscar]', cuerpo);
+    if (clienteId) { var c = S.clientes.filter(function (x) { return x.id === clienteId; })[0]; if (c) buscar.value = c.nombre; }
+    function pintar() {
+      var q = norm(buscar.value), lista = (S.facturasEmitidas || []).filter(function (f) { return !q || norm(f.cliente + f.numero).indexOf(q) >= 0; }).slice().reverse();
+      $('tbody', cuerpo).innerHTML = lista.map(function (f, i) {
+        return '<tr class="border-b border-outline"><td class="py-2" data-cb-numero>' + esc(f.numero) + '</td><td>' + esc(fechaCorta(f.iso)) + '</td><td>' + esc(f.cliente) + '</td><td data-cb-importe="total">' + plata(f.total) + '</td>' +
+          '<td class="text-right whitespace-nowrap"><button type="button" data-f-ver="' + i + '" class="' + BTN + '">Ver A4</button> <button type="button" data-f-pdf="' + i + '" class="' + BTN + '">PDF</button> <button type="button" data-f-mail="' + i + '" class="' + BTN + '">Mail</button></td></tr>';
+      }).join('') || '<tr><td colspan="5" class="py-4 text-on-surface-variant">Sin facturas con esa búsqueda.</td></tr>';
+      $$('[data-f-ver]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { facturaPDF(lista[+b.dataset.fVer], true); }); });
+      $$('[data-f-pdf]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { facturaPDF(lista[+b.dataset.fPdf]); }); });
+      $$('[data-f-mail]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { enviarFactura(lista[+b.dataset.fMail]); }); });
+    }
+    buscar.addEventListener('input', pintar); pintar();
+    var ventana = modal('Facturas emitidas', cuerpo, [{ texto: 'Cerrar', accion: function () {} }]);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[860px]');
   }
 
   function consultarMovimientos(alCambiar, cliente) {
@@ -333,6 +577,7 @@
       if (filtros.error()) { filtros.resumen([]); $('[data-resumen]', cuerpo).textContent = filtros.error(); $('tbody', cuerpo).innerHTML = ''; return; }
       var filas = [], q = norm(buscar.value), identidades = {}, sinIdentificar = 0, cantVentas = 0;
       ventas().forEach(function (v) {
+        if (v.cuentaEmpresa) return; // los remitos de empresa no son de la caja: están en Remitos y Empresas
         if (cliente) { var c = clienteRegistro(v); if (!c || c.id !== cliente.id) return; }
         var actividad = [], p = S.pedidos.filter(function (p0) { return v.pedido === '#' + p0.n; })[0];
         if (enFecha(v.iso)) actividad.push('Venta / remito');
@@ -353,12 +598,12 @@
       });
       filas.forEach(function (f) { var c = clienteRegistro(f.registro); if (c) identidades[c.id] = true; else sinIdentificar++; });
       var remitosUnicos = {};
-      filas.forEach(function (f) { if (f.venta) remitosUnicos[f.venta.remito] = f.venta; });
+      filas.forEach(function (f) { if (f.venta && !f.venta.cuentaEmpresa) remitosUnicos[f.venta.remito] = f.venta; });
       var saldoFiltrado = Object.keys(remitosUnicos).reduce(function (n, id) { return n + saldo(remitosUnicos[id]); }, 0);
       filtros.resumen(Object.keys(remitosUnicos).map(function (id) { return remitosUnicos[id]; }));
       $('[data-resumen]', cuerpo).textContent = cantVentas + ' ventas · ' + Object.keys(identidades).length + ' clientes identificados · ' + filas.length + ' movimientos · Saldo de remitos: ' + plata(saldoFiltrado) + (sinIdentificar ? ' · ' + sinIdentificar + ' movimientos sin identidad confirmada' : '');
       $('tbody', cuerpo).innerHTML = filas.map(function (f, i) {
-        return '<tr class="border-b border-outline"><td class="py-2">' + esc(f.fecha) + '<br><span class="text-xs text-on-surface-variant">' + esc(f.actividad) + '</span></td><td>' + esc(f.registro.cliente) + '</td><td data-cb-importe="total">' + (f.venta ? plata(f.venta.total) : '—') + '</td><td data-cb-importe="' + (f.venta && saldo(f.venta) > 0 ? 'pendiente' : 'pagado') + '">' + (f.venta ? plata(saldo(f.venta)) : '—') + '</td><td><button type="button" data-mov="' + i + '" class="' + BTN + '">' + (f.venta ? 'Ver remito' : 'Cargar remito') + '</button></td></tr>';
+        return '<tr class="border-b border-outline"><td class="py-2">' + esc(f.fecha) + '<br><span class="text-xs text-on-surface-variant">' + esc(f.actividad) + '</span></td><td>' + esc(f.registro.cliente) + '</td><td data-cb-importe="total">' + (f.venta ? (f.venta.cuentaEmpresa ? 'Cuenta empresa' : plata(f.venta.total)) : '—') + '</td><td data-cb-importe="' + (f.venta && saldo(f.venta) > 0 ? 'pendiente' : 'pagado') + '">' + (f.venta && !f.venta.cuentaEmpresa ? plata(saldo(f.venta)) : '—') + '</td><td><button type="button" data-mov="' + i + '" class="' + BTN + '">' + (f.venta ? 'Ver remito' : 'Cargar remito') + '</button></td></tr>';
       }).join('') || '<tr><td colspan="5" class="py-4">Sin movimientos con estos filtros.</td></tr>';
       $$('[data-mov]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { var f = filas[+b.dataset.mov]; if (f.venta) verRemito(f.venta, function () { if (cliente) cab.textContent = cliente.nombre + ' · Deuda total actual: ' + plata(ventas().filter(function (v) { var c = clienteRegistro(v); return c && c.id === cliente.id; }).reduce(function (n, v) { return n + saldo(v); }, 0)); renderConsulta(); if (alCambiar) alCambiar(); }); else location.href = 'venta.html?pedido=' + f.registro.n; }); });
     }
@@ -569,8 +814,11 @@
         y -= 8;
         if (v.descuento) await texto('Descuento: ' + plata(v.descuento));
         await texto('TOTAL: ' + plata(v.total), 14, true);
-        await texto('Pagado: ' + plata(cobrado(v)) + '     Saldo pendiente: ' + plata(saldo(v)), 12, true);
-        for (var p of pagos(v)) await texto(p.iso + ' · ' + p.medio + ': ' + plata(p.importe), 10);
+        if (v.cuentaEmpresa) await texto('Remito de empresa: se factura en forma mensual.', 10);
+        else {
+          await texto('Pagado: ' + plata(cobrado(v)) + '     Saldo pendiente: ' + plata(saldo(v)), 12, true);
+          for (var p of pagos(v)) await texto(p.iso + ' · ' + p.medio + ': ' + plata(p.importe), 10);
+        }
       }
       if (v.observaciones) { y -= 8; await texto('Observaciones', 11, true); await texto(v.observaciones); }
       y -= 12; await texto(S.negocio.pie || '', 9);
@@ -592,6 +840,143 @@
     finally { delete generandoPDF[v.remito]; }
   }
 
+  // Factura A4: mismo motor local que el remito. Devuelve true si se generó.
+  async function facturaPDF(f, ver) {
+    var clave = 'factura ' + f.numero;
+    if (generandoPDF[clave]) return false;
+    var ventana = ver ? window.open('', '_blank') : null;
+    if (ver && !ventana) { toast('El navegador bloqueó la vista A4. Habilitá la ventana y volvé a intentar.', 'error'); return false; }
+    if (ventana) { ventana.document.title = 'Factura ' + f.numero; ventana.document.body.textContent = 'Generando la factura en A4…'; }
+    generandoPDF[clave] = true;
+    try {
+      var lib = await biblioteca('PDFLib', 'pdf-lib-1.17.1.min.js'), pdf = await lib.PDFDocument.create();
+      pdf.setTitle('Factura ' + f.numero + ' · CLEANBOX');
+      var fN = await pdf.embedFont(lib.StandardFonts.Helvetica), fB = await pdf.embedFont(lib.StandardFonts.HelveticaBold);
+      // Paleta del DESIGN.md: tinta, primary, primary-fixed, outline y surface-container-low.
+      var tinta = lib.rgb(23 / 255, 38 / 255, 47 / 255), primario = lib.rgb(0, 93 / 255, 121 / 255), celeste = lib.rgb(191 / 255, 233 / 255, 1),
+        borde = lib.rgb(185 / 255, 201 / 255, 210 / 255), banda = lib.rgb(238 / 255, 244 / 255, 247 / 255), gris = lib.rgb(63 / 255, 72 / 255, 77 / 255), blanco = lib.rgb(1, 1, 1);
+      var W = 595.28, H = 841.89, M = 40, page, y;
+      var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+      var im = importesFactura(f), A = f.tipo === 'A';
+      function ancho(s, font, size) { try { return font.widthOfTextAtSize(s, size); } catch (e) { ctx.font = size + 'px Arial'; return ctx.measureText(s).width; } }
+      async function txt(s, x, yy, size, font, color, alinear) {
+        s = String(s == null ? '' : s); var w = ancho(s, font, size);
+        if (alinear === 'der') x -= w; if (alinear === 'centro') x -= w / 2;
+        try { page.drawText(s, { x: x, y: yy, size: size, font: font, color: color || tinta }); }
+        catch (e) {
+          canvas.width = Math.ceil(w * 3) + 6; canvas.height = Math.ceil(size * 4.5);
+          ctx.font = (font === fB ? 'bold ' : '') + size * 3 + 'px Arial'; ctx.fillStyle = '#17262f'; ctx.textBaseline = 'top'; ctx.fillText(s, 0, 0);
+          var img = await pdf.embedPng(canvas.toDataURL('image/png'));
+          page.drawImage(img, { x: x, y: yy - size * 0.3, width: canvas.width / 3, height: canvas.height / 3 });
+        }
+      }
+      function envolver(s, max, font, size) {
+        var lineas = [];
+        String(s == null ? '' : s).replace(/\r/g, '').split('\n').forEach(function (parrafo) {
+          var linea = '';
+          parrafo.split(/(\s+)/).forEach(function (pal) {
+            if (linea && ancho(linea + pal, font, size) > max) { lineas.push(linea.trim()); linea = ''; }
+            while (ancho(pal, font, size) > max) { var corte = pal.length; while (corte > 1 && ancho(pal.slice(0, corte), font, size) > max) corte--; lineas.push(pal.slice(0, corte)); pal = pal.slice(corte); }
+            linea += pal;
+          });
+          lineas.push(linea.trim());
+        });
+        return lineas;
+      }
+      function caja(x, yy, w, h, relleno, linea) { var o = { x: x, y: yy, width: w, height: h }; if (relleno) o.color = relleno; if (linea) { o.borderColor = linea; o.borderWidth = 1; } page.drawRectangle(o); }
+      var logo = null;
+      if (S.negocio.logo && /^data:image\//.test(S.negocio.logo)) {
+        var imgLogo = await new Promise(function (resolve, reject) { var img = new Image(); img.onload = function () { resolve(img); }; img.onerror = reject; img.src = S.negocio.logo; });
+        var lc = document.createElement('canvas'); lc.width = imgLogo.naturalWidth; lc.height = imgLogo.naturalHeight; lc.getContext('2d').drawImage(imgLogo, 0, 0);
+        logo = await pdf.embedPng(lc.toDataURL('image/png'));
+      }
+      var COL = { cant: 345, unit: 445, sub: W - M - 10 };
+      async function cabeceraTabla() {
+        caja(M, y - 22, W - 2 * M, 22, celeste);
+        await txt('Descripción', M + 10, y - 15, 9, fB, primario); await txt('Cant.', COL.cant, y - 15, 9, fB, primario, 'der');
+        await txt(A ? 'P. unit. neto' : 'P. unitario', COL.unit, y - 15, 9, fB, primario, 'der'); await txt(A ? 'Subtotal neto' : 'Subtotal', COL.sub, y - 15, 9, fB, primario, 'der');
+        y -= 22;
+      }
+      // Página 1: encabezado fiscal
+      page = pdf.addPage([W, H]); y = H - M;
+      caja(M, y - 128, W - 2 * M, 128, null, borde);
+      page.drawLine({ start: { x: W / 2, y: y - 54 }, end: { x: W / 2, y: y - 128 }, thickness: 1, color: borde });
+      caja(W / 2 - 25, y - 54, 50, 54, blanco, tinta);
+      await txt(f.tipo, W / 2, y - 34, 30, fB, tinta, 'centro'); await txt(A ? 'COD. 01' : 'COD. 06', W / 2, y - 48, 7, fN, gris, 'centro');
+      var yl = y - 18;
+      if (logo) { var esc1 = Math.min(130 / logo.width, 46 / logo.height); page.drawImage(logo, { x: M + 12, y: yl - logo.height * esc1 + 6, width: logo.width * esc1, height: logo.height * esc1 }); yl -= logo.height * esc1 + 6; }
+      else { await txt('CLEANBOX', M + 12, yl - 8, 20, fB, primario); yl -= 22; }
+      await txt(S.negocio.nombre || 'CLEANBOX Tintorería', M + 12, yl - 8, 11, fB); yl -= 14;
+      for (var dl of envolver(S.negocio.direccion || '', 200, fN, 8.5)) { await txt(dl, M + 12, yl - 8, 8.5, fN, gris); yl -= 11; }
+      await txt('Tel: ' + (S.negocio.telefono || ''), M + 12, yl - 8, 8.5, fN, gris); yl -= 11;
+      await txt('IVA Responsable Inscripto', M + 12, yl - 8, 8.5, fN, gris);
+      var xr = W / 2 + 40;
+      await txt('FACTURA', xr, y - 28, 20, fB, primario);
+      await txt('N° ' + f.numero.replace(/^[AB] /, ''), xr, y - 46, 11, fB);
+      await txt('Fecha de emisión: ' + fechaCorta(f.iso) + '/' + f.iso.slice(0, 4), xr, y - 62, 9, fN);
+      if (f.periodo) await txt('Período facturado: ' + f.periodo, xr, y - 76, 9, fN);
+      var notaFiscal = envolver('CUIT, ingresos brutos e inicio de actividades del emisor: se completan con el alta en ARCA.', W - M - xr - 10, fN, 7);
+      for (var ni = 0; ni < notaFiscal.length; ni++) await txt(notaFiscal[ni], xr, y - 98 - ni * 9, 7, fN, gris);
+      y -= 140;
+      // Receptor
+      var alto = f.oc ? 62 : 50;
+      caja(M, y - alto, W - 2 * M, alto, banda, borde);
+      await txt('Cliente: ' + f.cliente, M + 12, y - 18, 11, fB);
+      await txt(A ? 'CUIT: ' + (f.cuit || '—') + '   ·   IVA Responsable Inscripto' : 'Consumidor final', M + 12, y - 33, 9, fN, gris);
+      if (f.oc) await txt('Orden de compra: ' + f.oc, M + 12, y - 47, 9, fB);
+      y -= alto + 14;
+      await cabeceraTabla();
+      for (var i = 0; i < f.renglones.length; i++) {
+        var r = f.renglones[i], lineas = envolver(r.nombre, 250, fN, 10), h = lineas.length * 13 + 9;
+        if (y - h < 175) { page = pdf.addPage([W, H]); y = H - M; await cabeceraTabla(); }
+        if (i % 2) caja(M, y - h, W - 2 * M, h, banda);
+        for (var li = 0; li < lineas.length; li++) await txt(lineas[li], M + 10, y - 15 - li * 13, 10, fN);
+        var unit = A ? r.precio / 1.21 : r.precio;
+        await txt(String(r.cant), COL.cant, y - 15, 10, fN, tinta, 'der');
+        await txt(A ? plata2(unit) : plata(unit), COL.unit, y - 15, 10, fN, tinta, 'der');
+        await txt(A ? plata2(centavos(unit * r.cant)) : plata(unit * r.cant), COL.sub, y - 15, 10, fB, tinta, 'der');
+        y -= h;
+      }
+      page.drawLine({ start: { x: M, y: y }, end: { x: W - M, y: y }, thickness: 1, color: borde });
+      y -= 16;
+      // Observaciones a la izquierda, totales a la derecha
+      var obsLineas = f.observaciones ? envolver(f.observaciones, 270, fN, 9) : [];
+      var altoTot = A ? 78 : 40, altoObs = obsLineas.length ? obsLineas.length * 12 + 26 : 0;
+      if (y - Math.max(altoTot, altoObs) < 80) { page = pdf.addPage([W, H]); y = H - M; }
+      if (obsLineas.length) {
+        caja(M, y - altoObs, 290, altoObs, null, borde);
+        await txt('Observaciones', M + 10, y - 15, 9, fB, primario);
+        for (var oi = 0; oi < obsLineas.length; oi++) await txt(obsLineas[oi], M + 10, y - 29 - oi * 12, 9, fN);
+      }
+      var xt = W - M - 200, yt = y;
+      if (A) {
+        await txt('Neto gravado', xt + 10, yt - 14, 10, fN); await txt(plata2(im.neto), W - M - 10, yt - 14, 10, fN, tinta, 'der');
+        await txt('IVA 21%', xt + 10, yt - 30, 10, fN); await txt(plata2(im.iva), W - M - 10, yt - 30, 10, fN, tinta, 'der');
+        yt -= 40;
+      }
+      caja(xt, yt - 34, 200, 34, primario);
+      await txt('TOTAL', xt + 10, yt - 22, 12, fB, blanco); await txt(plata(im.total), W - M - 10, yt - 23, 15, fB, blanco, 'der');
+      if (!A) await txt('IVA incluido', xt + 10, yt - 46, 8, fN, gris);
+      pdf.getPages().forEach(function (pagina, n) {
+        pagina.drawLine({ start: { x: M, y: 58 }, end: { x: W - M, y: 58 }, thickness: 1, color: borde });
+        pagina.drawText('DEMO SIN VALIDEZ FISCAL · Sin CAE ni código QR de ARCA', { x: M, y: 42, size: 8, font: fB, color: gris });
+        pagina.drawText((n + 1) + ' / ' + pdf.getPageCount(), { x: W - M - 24, y: 42, size: 8, font: fN, color: gris });
+      });
+      var bytes = await pdf.save();
+      if (ver) {
+        var url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        if (ventana.closed) { URL.revokeObjectURL(url); return false; }
+        ventana.location.replace(url);
+        var limpieza = setInterval(function () { if (ventana.closed) { clearInterval(limpieza); URL.revokeObjectURL(url); } }, 1000);
+      } else {
+        descargarArchivo(bytes, 'application/pdf', 'CLEANBOX-Factura-' + f.numero.replace(/[^A-Za-z0-9]+/g, '-') + '.pdf');
+        toast('PDF de la factura descargado');
+      }
+      return true;
+    } catch (e) { if (ventana && !ventana.closed) ventana.close(); toast('No se pudo generar la factura. Volvé a intentar.', 'error'); return false; }
+    finally { delete generandoPDF[clave]; }
+  }
+
   // ── Impresión de ticket/remito 80 mm (por duplicado) ──────────────
   function imprimirTicket(v) {
     var N = S.negocio, conPrecios = !v.sinPrecios;
@@ -605,8 +990,9 @@
         (!v.items ? '<div>' + esc(v.detalle) + '</div>' : '') +
         (conPrecios && v.descuento ? '<div class="f s"><span>Descuento</span><span>-' + plata(v.descuento) + '</span></div>' : '') +
         (conPrecios ? '<hr><div class="f tot"><span>TOTAL</span><span>' + plata(v.total) + '</span></div>' +
+        (v.cuentaEmpresa ? '<div class="s">Remito de empresa · se factura en forma mensual</div>' :
         '<div class="f"><span>Pagado</span><span>' + plata(cobrado(v)) + '</span></div><div class="f"><b>Saldo pendiente</b><b>' + plata(saldo(v)) + '</b></div>' +
-        '<div class="s">' + estadoCobro(v) + '</div>' + pagos(v).map(function (p) { return '<div class="s">' + esc(p.iso) + ' · ' + esc(p.medio) + ': ' + plata(p.importe) + '</div>'; }).join('') : '') +
+        '<div class="s">' + estadoCobro(v) + '</div>' + pagos(v).map(function (p) { return '<div class="s">' + esc(p.iso) + ' · ' + esc(p.medio) + ': ' + plata(p.importe) + '</div>'; }).join('')) : '') +
         (v.entrega ? '<div><b>Fecha de entrega: ' + esc(v.entrega) + '</b></div>' : '') +
         (v.observaciones ? '<hr><div class="obs"><b>Observaciones:</b><br>' + esc(v.observaciones) + '</div>' : '') +
         '<hr><div class="c s">' + esc(N.pie) + '</div><div class="ley">' + leyenda + '</div><div class="c s">DOCUMENTO NO VÁLIDO COMO FACTURA</div></div>';
@@ -655,7 +1041,7 @@
         '<div class="p-3 flex flex-col"><div class="flex items-baseline justify-between mb-1"><span class="font-headline-md text-headline-md font-bold ' + numCls + '">#' + p.n + '</span>' + derecha + '</div>' +
         '<div class="font-label-md text-label-md text-on-surface mb-2">' + esc(p.cliente) + '</div>' +
         '<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">' + meta + '</div>' +
-        '<div class="pt-2 border-t border-outline flex flex-wrap justify-end gap-2"><button type="button" data-acc="remito" class="' + BTN + '">' + (ventaPedido(p) ? 'Ver remito / pagos' : 'Remito / anticipo') + '</button>' + accion + '</div></div></article>';
+        '<div class="pt-2 border-t border-outline flex flex-wrap justify-end gap-2"><button type="button" data-acc="remito" class="' + BTN + '">' + (remito ? (remito.cuentaEmpresa ? 'Ver remito' : 'Ver remito / pagos') : 'Remito / anticipo') + '</button>' + accion + '</div></div></article>';
     }
     function pasa(p) {
       if (filtro === 'hoy') return p.entrega === HOY;
@@ -818,7 +1204,7 @@
     });
     var params = new URLSearchParams(location.search);
     var pedido = params.get('pedido') ? S.pedidos.filter(function (p) { return p.n === +params.get('pedido'); })[0] : null;
-    if (ventaPedido(pedido)) { location.replace('caja.html?remito=' + encodeURIComponent(ventaPedido(pedido).remito)); return; }
+    if (ventaPedido(pedido)) { location.replace((ventaPedido(pedido).cuentaEmpresa ? 'remitos.html' : 'caja.html') + '?remito=' + encodeURIComponent(ventaPedido(pedido).remito)); return; }
     var cliente = pedido ? clienteRegistro(pedido) : (params.get('clienteId') ? S.clientes.filter(function (c) { return c.id === params.get('clienteId'); })[0] : params.get('cliente') ? clienteUnico(params.get('cliente')) : null);
     // Si no viene de un pedido ni de Clientes, arranca con el ejemplo de Stitch
     var items = pedido && Array.isArray(pedido.items) ? JSON.parse(JSON.stringify(pedido.items)) : [];
@@ -855,7 +1241,7 @@
           { texto: 'Usar este cliente', primario: true, accion: function () {
             if (!elegido) { toast('Elegí o creá el cliente', 'error'); return false; }
             if (pedido && (pedido.clienteId ? elegido.id !== pedido.clienteId : elegido.nombre !== pedido.cliente)) { toast('Este remito debe conservar el cliente del pedido', 'error'); return false; }
-            cliente = elegido; if (cliente.tipo !== 'empresa') descPct = 0; pintarCliente(); render();
+            cliente = elegido; if (cliente.tipo !== 'empresa') descPct = 0; pintarCliente(); render(); formPago.poner(modoInicial());
           } },
           { texto: 'Cancelar', accion: function () {} }
         ]);
@@ -876,13 +1262,18 @@
           '<input data-descripcion="' + i + '" aria-label="Descripción del renglón ' + (i + 1) + '" placeholder="Descripción de la prenda" value="' + esc(descripcion(it)) + '" class="' + INPUT + ' font-bold"></label>' +
           '<div data-renglon-valores><label class="flex items-center gap-1 text-on-surface-variant">Unit. $' +
           '<input data-precio="' + i + '" aria-label="Precio unitario del renglón ' + (i + 1) + '" type="number" min="0" step="1" value="' + esc(it.precioEntrada != null ? it.precioEntrada : unitario(it)) + '" class="w-24 min-w-0 px-2 py-1.5 bg-surface-container-lowest border border-outline rounded text-on-surface focus:outline-none focus:border-primary"></label>' +
-          '<div data-cb-cantidad class="flex items-center gap-2 bg-surface-container-lowest border border-outline rounded p-0.5">' +
-          '<button type="button" data-menos="' + i + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container active:scale-95 text-lg font-bold">−</button>' +
-          '<span class="font-headline-md text-[15px] font-bold w-5 text-center">' + it.cant + '</span>' +
-          '<button type="button" data-mas="' + i + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container active:scale-95 text-lg font-bold">+</button></div>' +
-          '<div class="text-right font-headline-md text-[16px] font-bold text-on-surface" data-importe>' + plata(it.cant * unitario(it)) + '</div></div></div>';
+          // Cantidad escrita: pedido del cliente, 25/10 (más rápido que − y +)
+          '<label data-cb-cantidad class="flex items-center gap-1 text-on-surface-variant">Cant.' +
+          '<input data-cant="' + i + '" aria-label="Cantidad del renglón ' + (i + 1) + '" type="number" min="1" step="1" inputmode="numeric" value="' + (it.cant > 0 ? it.cant : '') + '" style="width:60px;text-align:center" class="px-2 py-1.5 bg-surface-container-lowest border border-outline rounded text-on-surface font-bold focus:outline-none focus:border-primary"></label>' +
+          '<div class="text-right font-headline-md text-[16px] font-bold text-on-surface" data-importe>' + plata(it.cant * unitario(it)) + '</div>' +
+          '<button type="button" data-quitar="' + i + '" aria-label="Quitar renglón ' + (i + 1) + '" title="Quitar" class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">close</span></button></div></div>';
       }).join('') : '<p class="text-[13px] text-on-surface-variant py-space-sm">Tocá una prenda de la izquierda para sumarla.</p>');
-      // Botones de la grilla: "N en ticket"
+      pintarBotones();
+      if (lista) pintarLista();
+      return totales();
+    }
+    // Botones de la grilla: "N en ticket"
+    function pintarBotones() {
       botones.forEach(function (b) {
         var it = items.filter(function (x) { return x.nombre === b.dataset.item; })[0];
         var badge = $('span.absolute', b);
@@ -899,8 +1290,6 @@
           $('div', b).classList.remove('pr-[76px]', 'pr-14');
         }
       });
-      if (lista) pintarLista();
-      return totales();
     }
     // Al escribir se actualizan los importes sin reconstruir el campo ni perder el foco.
     function totales() {
@@ -927,6 +1316,15 @@
         $('[data-importe]', inp.closest('[data-renglon]')).textContent = plata(it.cant * it.precio);
         totalManual = null; totales();
       }
+      if (inp.hasAttribute('data-cant')) {
+        var ic = items[+inp.dataset.cant], n = Number(inp.value);
+        var ok = inp.value !== '' && Number.isSafeInteger(n) && n > 0;
+        inp.setAttribute('aria-invalid', String(!ok));
+        ic.cant = ok ? n : 0; // 0 no se guarda: cobrar() exige cantidad mayor a cero
+        $('[data-importe]', inp.closest('[data-renglon]')).textContent = plata(ic.cant * unitario(ic));
+        totalManual = null; totales(); pintarBotones();
+        if (lista) pintarLista();
+      }
     });
     var agregarRenglon = document.createElement('button');
     agregarRenglon.type = 'button';
@@ -945,10 +1343,8 @@
       });
     });
     renglones.addEventListener('click', function (e) {
-      var m = e.target.closest('[data-menos],[data-mas]'); if (!m) return;
-      var i = +(m.dataset.menos || m.dataset.mas);
-      items[i].cant += m.dataset.mas ? 1 : -1;
-      if (items[i].cant <= 0) items.splice(i, 1);
+      var m = e.target.closest('[data-quitar]'); if (!m) return;
+      items.splice(+m.dataset.quitar, 1);
       totalManual = null; render();
     });
     // Editar descuento y total en el lugar
@@ -971,7 +1367,16 @@
     var MP_OFF = 'py-2 px-1 text-center font-label-md text-[13px] rounded text-on-surface-variant hover:bg-surface-container-low transition-colors';
     var mps = $$('.grid.grid-cols-3 > button', colTicket);
     var contMedios = mps[0].parentElement.parentElement;
-    formPago = formularioPago(function () { return totalesSinActualizar(); }, cliente && cliente.tipo === 'empresa' ? 'Debe' : 'Efectivo');
+    var tituloTicket = $('span.uppercase', colTicket), subTicket = tituloTicket && tituloTicket.nextElementSibling;
+    function modoInicial() { return cliente && cliente.tipo === 'empresa' ? 'Empresa' : 'Efectivo'; }
+    formPago = formularioPago(function () { return totalesSinActualizar(); }, modoInicial(), function () { return !!(cliente && cliente.tipo === 'empresa'); }, function (modo) {
+      if (!tituloTicket) return;
+      tituloTicket.textContent = modo === 'Empresa' ? 'Remito de empresa' : 'Ticket mostrador';
+      subTicket.textContent = modo === 'Empresa' ? 'No entra en la caja · se factura desde Empresas' : 'Comprobante de cobro x servicios';
+      colTicket.dataset.cbRemitoEmpresa = String(modo === 'Empresa');
+      if (avisoRemito) avisoRemito.textContent = modo === 'Empresa' ? 'Confirmá prendas y cantidades antes de guardar. Si hay un error, se corrige y se reimprime desde Remitos.'
+        : 'Confirmá prendas y total antes de guardar el remito o un anticipo. Después podés registrar pagos sobre este mismo comprobante.';
+    });
     // Se evita llamar render/totales desde el formulario para conservar el foco al escribir.
     function totalesSinActualizar() {
       var sub = items.reduce(function (n, it) { return n + it.cant * unitario(it); }, 0);
@@ -986,11 +1391,12 @@
       var invalido = $$('input', renglones).filter(function (inp) {
         return inp.hasAttribute('data-descripcion') ? !inp.value.trim() : inp.value === '' || !inp.checkValidity();
       })[0];
-      if (invalido) { toast('Completá la descripción y un precio válido en cada renglón', 'error'); invalido.focus(); return; }
+      if (invalido) { toast('Completá descripción, precio y cantidad válidos en cada renglón', 'error'); invalido.focus(); return; }
       if (ventaPedido(pedido)) { toast('Este pedido ya tiene remito. Abrilo desde Caja para registrar el pago.', 'error'); return; }
       var r = render();
-      var nuevosPagos = formPago.leer();
-      if (!nuevosPagos || !importeValido(r.tot) || r.tot <= 0 || items.some(function (it) { return !importeValido(unitario(it)) || !Number.isSafeInteger(it.cant) || it.cant <= 0 || !importeValido(unitario(it) * it.cant); })) { toast('Revisá total e importes del pago: usá pesos enteros válidos', 'error'); return; }
+      var nuevosPagos = formPago.leer(), cuenta = formPago.modo() === 'Empresa' && cliente.tipo === 'empresa';
+      // En remitos de empresa el importe es informativo: puede quedar en $0 y lo valoriza el dueño al facturar.
+      if (!nuevosPagos || !importeValido(r.tot) || (r.tot <= 0 && !cuenta) || items.some(function (it) { return !importeValido(unitario(it)) || !Number.isSafeInteger(it.cant) || it.cant <= 0 || !importeValido(unitario(it) * it.cant); })) { toast('Revisá total e importes del pago: usá pesos enteros válidos', 'error'); return; }
       var v = {
         ticket: 'T-' + ('0000' + S.sigTicket++).slice(-4), remito: 'R-' + ('0000' + S.sigRemito++).slice(-4),
         fecha: fechaCorta(HOY) + '/2026', iso: HOY, hora: ahora(), clienteId: cliente.id, cliente: cliente.nombre, tipo: cliente.tipo, cuit: cliente.cuit || '',
@@ -998,23 +1404,24 @@
         detalle: items.map(function (it) { return it.cant + ' ' + descripcion(it).trim().toLowerCase(); }).join(' + '),
         observaciones: observaciones.value.trim(),
         pagos: nuevosPagos.map(function (p) { return { medio: p.medio, importe: p.importe, iso: HOY, hora: ahora() }; }),
-        descuento: r.desc, total: r.tot, medio: nuevosPagos.length > 1 ? 'Combinado' : nuevosPagos.length ? nuevosPagos[0].medio : 'Debe', pedido: pedido ? '#' + pedido.n : '', sinPrecios: sinPrecios.checked,
+        descuento: r.desc, total: r.tot, medio: cuenta ? 'Empresa' : nuevosPagos.length > 1 ? 'Combinado' : nuevosPagos.length ? nuevosPagos[0].medio : 'Debe', pedido: pedido ? '#' + pedido.n : '', sinPrecios: sinPrecios.checked,
+        descuentoPct: totalManual == null ? descPct : null,
         entrega: entregaIso ? (function (x) { return DIAS[x.getDay()] + ' ' + ('0' + x.getDate()).slice(-2) + '/' + ('0' + (x.getMonth() + 1)).slice(-2) + '/' + x.getFullYear(); })(d(entregaIso)) : ''
       };
+      if (cuenta) v.cuentaEmpresa = true;
       S.ventas.push(v);
       var estadoAnterior = pedido && pedido.estado;
       if (pedido && params.get('entregar') === '1') { pedido.estado = 'entregado'; pedido.entregadoIso = HOY; }
       cliente.ultimo = fechaCorta(HOY); if (pedido) cliente.ultimoNro = '#' + pedido.n;
       if (!save()) { S.ventas.pop(); if (pedido) { pedido.estado = estadoAnterior; delete pedido.entregadoIso; } toast('No se pudo guardar el remito. Revisá el almacenamiento del navegador.', 'error'); return; }
       if (imprimir) imprimirTicket(v);
-      toast('Remito ' + v.remito + ' guardado · pagado ' + plata(cobrado(v)) + ' · debe ' + plata(saldo(v)));
-      items = []; pedido = null; totalManual = null; descPct = 0; observaciones.value = ''; formPago.reiniciar(); ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
+      toast(cuenta ? 'Remito de empresa ' + v.remito + ' guardado · no entra en la caja' : 'Remito ' + v.remito + ' guardado · pagado ' + plata(cobrado(v)) + ' · debe ' + plata(saldo(v)));
+      items = []; pedido = null; totalManual = null; descPct = 0; observaciones.value = ''; formPago.reiniciar(modoInicial()); ponerEntrega(addDias(HOY, 3)); pintarCliente(); render(); nro();
     }
     var cobrarBtn = $$('button', colTicket).filter(function (b) { return /Cobrar e imprimir/.test(b.textContent); })[0];
     var guardarBtn = $$('button', colTicket).filter(function (b) { return /Guardar sin imprimir/.test(b.textContent); })[0];
     var avisoRemito = document.createElement('p'); avisoRemito.className = 'text-xs text-on-surface-variant';
-    avisoRemito.textContent = 'Confirmá prendas y total antes de guardar el remito o un anticipo. Después podés registrar pagos sobre este mismo comprobante.';
-    agregarRenglon.after(avisoRemito);
+    agregarRenglon.after(avisoRemito); formPago.actualizar();
     $('span:last-child', cobrarBtn).textContent = 'Guardar e imprimir ticket';
     if (pedido && params.get('entregar') === '1') $('span:last-child', cobrarBtn).textContent = 'Entregar e imprimir ticket';
     cobrarBtn.addEventListener('click', function () { cobrar(true); });
@@ -1035,13 +1442,23 @@
       '<tbody class="divide-y divide-outline"></tbody></table>';
     grilla.after(lista);
     lista.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-l-mas],[data-l-menos]'); if (!b) return;
-      var nombre = b.dataset.lMas || b.dataset.lMenos;
+      var b = e.target.closest('[data-l-mas],[data-l-quitar]'); if (!b) return;
+      var nombre = b.dataset.lMas || b.dataset.lQuitar;
       var it = items.filter(function (x) { return x.nombre === nombre; })[0];
-      if (b.dataset.lMas) { if (it) it.cant++; else items.push({ nombre: nombre, cant: 1 }); }
-      else if (it) { it.cant--; if (it.cant <= 0) items.splice(items.indexOf(it), 1); }
+      if (b.dataset.lMas) { if (it) it.cant = (it.cant > 0 ? it.cant : 0) + 1; else items.push({ nombre: nombre, cant: 1 }); }
+      else if (it) items.splice(items.indexOf(it), 1);
       totalManual = null; render();
+      if (b.dataset.lMas) { var campoCant = $('[data-l-cant="' + CSS.escape(nombre) + '"]', lista); if (campoCant) { campoCant.focus(); campoCant.select(); } }
     });
+    // Cantidad escrita también en la lista: se aplica al salir del campo o con Enter.
+    lista.addEventListener('change', function (e) {
+      var inp = e.target; if (!inp.hasAttribute('data-l-cant')) return;
+      var it = items.filter(function (x) { return x.nombre === inp.dataset.lCant; })[0], n = Number(inp.value);
+      if (!it) return;
+      if (inp.value === '' || !Number.isSafeInteger(n) || n < 1) { toast('Escribí una cantidad entera mayor a cero', 'error'); inp.value = it.cant > 0 ? it.cant : ''; return; }
+      it.cant = n; totalManual = null; render();
+    });
+    lista.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.hasAttribute('data-l-cant')) e.target.blur(); });
     function pintarLista() {
       var t = filtroGrilla ? norm(filtroGrilla.value) : '';
       S.precios.forEach(function (p) { if (PRECIOS[p.nombre] == null) PRECIOS[p.nombre] = p.precio; });
@@ -1052,10 +1469,9 @@
           '<td class="py-3.5 px-space-md font-label-md text-on-surface"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-on-surface-variant text-[20px]">' + esc(p.icono || 'checkroom') + '</span><span>' + n + '</span></div></td>' +
           '<td class="py-3.5 px-space-md font-headline-md font-semibold text-on-surface">' + plata(PRECIOS[p.nombre]) + '</td>' +
           '<td class="py-3.5 px-space-md text-right">' + (it
-            ? '<div class="inline-flex items-center gap-2 bg-surface-container-lowest border border-outline rounded p-0.5">' +
-              '<button type="button" data-l-menos="' + n + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container text-lg font-bold">−</button>' +
-              '<span class="font-headline-md text-[15px] font-bold w-6 text-center">' + it.cant + '</span>' +
-              '<button type="button" data-l-mas="' + n + '" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:bg-surface-container text-lg font-bold">+</button></div>'
+            ? '<div class="inline-flex items-center gap-1">' +
+              '<input data-l-cant="' + n + '" aria-label="Cantidad de ' + n + ' en el ticket" type="number" min="1" step="1" inputmode="numeric" value="' + (it.cant > 0 ? it.cant : '') + '" style="width:72px;text-align:center" class="px-2 py-1.5 bg-surface-container-lowest border border-outline rounded font-headline-md text-[15px] font-bold text-on-surface focus:outline-none focus:border-primary">' +
+              '<button type="button" data-l-quitar="' + n + '" aria-label="Quitar ' + n + ' del ticket" title="Quitar" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]">close</span></button></div>'
             : '<button type="button" data-l-mas="' + n + '" class="inline-flex items-center gap-1 text-primary hover:text-on-primary-container font-label-md text-sm px-2.5 py-1 rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[16px]">add</span><span>Agregar</span></button>') +
           '</td></tr>';
       }).join('');
@@ -1133,8 +1549,12 @@
         '<div class="flex items-center gap-3 text-xs text-on-surface-variant mt-0.5">' +
         (emp ? '<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Resp. Inscripto</span>' : '') +
         (c.ultimo ? '<span>Último pedido: <strong class="text-on-surface font-medium">' + esc(c.ultimo) + '</strong>' + (c.ultimoNro ? ' (' + esc(c.ultimoNro) + ')' : '') + '</span>' : '<span>Sin pedidos todavía</span>') +
-        '</div></div></div><div class="flex items-center gap-2">' +
-        '<button type="button" data-cb-accion="secundaria" data-deuda="' + esc(c.id) + '" class="' + BTN + '">Remitos y deuda · <b data-cb-importe="total">' + plata(ventas().filter(function (v) { var vc = clienteRegistro(v); return vc && vc.id === c.id; }).reduce(function (n, v) { return n + saldo(v); }, 0)) + '</b></button>' +
+        '</div></div></div><div class="flex items-center gap-2">' + (function () {
+          var deuda = ventas().filter(function (v) { var vc = clienteRegistro(v); return vc && vc.id === c.id; }).reduce(function (n, v) { return n + saldo(v); }, 0);
+          var botonDeuda = '<button type="button" data-cb-accion="secundaria" data-deuda="' + esc(c.id) + '" class="' + BTN + '">' + (emp ? 'Deuda del local' : 'Remitos y deuda') + ' · <b data-cb-importe="total">' + plata(deuda) + '</b></button>';
+          // Empresa: sus remitos de cuenta empresa están en Remitos; la deuda sólo aparece si quedó algo impago del mostrador.
+          return emp ? '<a data-cb-accion="secundaria" data-remitos-empresa href="remitos.html?clienteId=' + encodeURIComponent(c.id) + '" class="' + BTN + ' inline-flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">description</span>Remitos</a>' + (deuda > 0 ? botonDeuda : '') : botonDeuda;
+        })() +
         '<a data-cb-accion="terciaria" href="venta.html?clienteId=' + encodeURIComponent(c.id) + '" class="px-3 py-1.5 text-xs font-label-md border border-outline rounded text-primary hover:bg-surface-container active:scale-[0.98] transition-[color,background-color,border-color,transform] flex items-center gap-1">' +
         '<span class="material-symbols-outlined text-[15px]">add_shopping_cart</span><span>Nueva venta</span></a></div></div>';
     }
@@ -1235,7 +1655,7 @@
       MEDIOS.forEach(function (m) { tot[m] = [0, 0]; }); total = 0; n = 0; tbody.innerHTML = '';
       var movimientos = [], vistos = {}, deudaDia = 0;
       ventas().forEach(function (v) {
-        if (vistos[v.remito]) return; vistos[v.remito] = true;
+        if (vistos[v.remito] || v.cuentaEmpresa) return; vistos[v.remito] = true; // la caja es sólo del local
         var delDia = pagos(v).filter(function (p) { return p.iso === fechaCaja.value && tot[p.medio]; });
         var pagadoFecha = pagos(v).filter(function (p) { return p.iso <= fechaCaja.value; }).reduce(function (n, p) { return n + p.importe; }, 0);
         var debeFecha = Math.max(0, v.total - pagadoFecha);
@@ -1273,161 +1693,216 @@
     });
   })();
 
-  // ── FACTURAR ──────────────────────────────────────────────────────
-  if (VISTA === 'facturar') (function () {
-    var tbody = $('main tbody');
-    var filas0 = $$('tr', tbody);
-    var tplSin = filas0[0], tplCon = filas0[3];
-    // Filas de ejemplo de Stitch → datos
-    var REM = ventas();
-    if (!S.facturas['R-0231']) S.facturas['R-0231'] = 'A 0003-00000412';
-    var estado = 'sin';
-    var ESTADOS = { sin: 'Estado: Sin facturar', con: 'Estado: Facturadas', todas: 'Estado: Todas' };
-
-    // Filtros: el texto fijo de Stitch pasa a ser campo editable con el mismo estilo
-    var barra = $('main > div:nth-of-type(1)');
-    barra.setAttribute('data-cb-filtros', '');
-    var pillCli = $('div.flex.items-center.gap-2', barra);
-    var nombreSpan = $('span.font-bold', pillCli);
-    var cliIn = document.createElement('input');
-    cliIn.value = nombreSpan.textContent.trim(); cliIn.placeholder = 'Todos';
-    cliIn.className = 'font-bold text-on-surface font-label-md text-xs bg-transparent border-0 p-0 w-40 focus:ring-0 focus:outline-none';
-    nombreSpan.replaceWith(cliIn);
-    $('button', pillCli).addEventListener('click', function () { cliIn.value = ''; render(); });
-    var pillFecha = $$('div.flex.items-center.gap-1\\.5', barra)[0];
-    var fechas = $$('span.font-medium', pillFecha);
-    function campoFecha(span, iso) {
-      var i = document.createElement('input'); i.type = 'date'; i.value = iso;
-      i.className = 'font-medium text-xs text-on-surface bg-transparent border-0 p-0 focus:ring-0 focus:outline-none';
-      span.replaceWith(i); return i;
+  // Fechas de los atajos de período, compartidas por Remitos y Empresas.
+  function rangoPeriodo(clave) {
+    var inicio = HOY, fin = HOY, x;
+    if (clave === 'semana' || clave === 'semanaAnterior') {
+      inicio = addDias(HOY, -((d(HOY).getDay() + 6) % 7) - (clave === 'semanaAnterior' ? 7 : 0)); fin = addDias(inicio, 6);
     }
-    var desde = campoFecha(fechas[0], '2026-10-01'), hasta = campoFecha(fechas[1], '2026-10-31');
-    var filtrosBox = document.createElement('div'); filtrosBox.className = 'px-space-lg py-3 border-b border-outline bg-surface'; barra.after(filtrosBox);
-    filtrosBox.setAttribute('data-cb-filtros-extra', '');
-    var filtros = filtrosRemitos(filtrosBox, desde, hasta, render);
-    $('[data-periodo]', filtrosBox).parentElement.style.display = 'none';
-    var atajos = $$('div.flex.items-center.gap-1 > button', barra);
-    var AT_ON = 'px-2.5 py-1 rounded text-xs font-bold font-label-md bg-primary-container text-on-primary-container border border-primary';
-    var AT_OFF = 'px-2.5 py-1 rounded text-xs font-label-md text-on-surface-variant hover:bg-surface-container transition-colors';
-    atajos.forEach(function (b, i) {
-      b.setAttribute('data-cb-periodo', ''); b.setAttribute('aria-pressed', String(i === 2));
-      b.addEventListener('click', function () {
-        var periodo = $('[data-periodo]', filtrosBox); periodo.value = ['dia', 'semana', 'mes'][i]; periodo.dispatchEvent(new Event('change'));
-        atajos.forEach(function (o) { o.className = o === b ? AT_ON : AT_OFF; o.setAttribute('aria-pressed', String(o === b)); }); render();
-      });
-    });
-    [cliIn, desde, hasta].forEach(function (x) { x.addEventListener('input', function () { atajos.forEach(function (o) { o.className = AT_OFF; o.setAttribute('aria-pressed', 'false'); }); render(); }); });
-    var btnEstado = $$('button', barra).filter(function (b) { return /Estado:/.test(b.textContent); })[0];
-    btnEstado.dataset.cbEstadoFactura = estado;
-    btnEstado.addEventListener('click', function () {
-      estado = estado === 'sin' ? 'con' : estado === 'con' ? 'todas' : 'sin';
-      btnEstado.dataset.cbEstadoFactura = estado;
-      $('span', btnEstado).textContent = ESTADOS[estado]; render();
-    });
-    var emitidas = $$('header button').filter(function (b) { return /facturas emitidas/.test(b.textContent); })[0];
-    if (emitidas) { $('span.material-symbols-outlined', emitidas).textContent = 'receipt_long'; emitidas.addEventListener('click', function () { estado = 'con'; btnEstado.dataset.cbEstadoFactura = estado; $('span', btnEstado).textContent = ESTADOS.con; render(); }); }
-
-    function fila(r) {
-      var fact = S.facturas[r.remito];
-      var tr = (fact ? tplCon : tplSin).cloneNode(true);
-      tr.className = 'hover:bg-surface-container-low transition-colors';
-      var td = $$('td', tr), f = r.iso.split('-');
-      td[0].textContent = f[2] + '/' + f[1] + '/' + f[0];
-      td[1].textContent = r.remito; td[2].textContent = r.cliente; td[3].textContent = detalleVenta(r);
-      td[1].setAttribute('data-cb-numero', ''); marcarImporte(td[5]);
-      var ico = r.medio === 'Efectivo' ? ['payments', 'text-tertiary'] : r.medio === 'Mercado Pago' ? ['qr_code_2', 'text-primary'] : ['account_balance', 'text-secondary'];
-      td[4].textContent = estadoCobro(r);
-      td[5].textContent = plata(r.total);
-      td[6].classList.add('whitespace-nowrap'); td[7].classList.add('whitespace-nowrap');
-      if (fact) {
-        td[6].innerHTML = '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold font-label-md bg-primary-fixed text-on-primary-fixed-variant border border-outline-variant"><span class="material-symbols-outlined text-[13px]">check_circle</span>' + esc(fact) + '</span>';
-        var bs = $$('button', td[7]);
-        bs[0].addEventListener('click', function () { pdf(r, fact); });
-        bs[1].addEventListener('click', function () { location.href = 'mailto:?subject=' + encodeURIComponent('Factura ' + fact + ' · CLEANBOX') + '&body=' + encodeURIComponent('Hola, te enviamos la factura ' + fact + ' por ' + plata(r.total) + ' (remito ' + r.remito + ').'); });
-        bs[2].addEventListener('click', function () { window.open('https://wa.me/?text=' + encodeURIComponent('Hola! Te enviamos la factura ' + fact + ' de CLEANBOX por ' + plata(r.total) + ' (remito ' + r.remito + ').'), '_blank'); });
-      } else if (r.tipo !== 'empresa') {
-        td[6].innerHTML = '<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline-variant">Remito particular</span>';
-        td[7].innerHTML = '<span class="text-[11px] text-on-surface-variant">No lleva factura</span>';
-      } else {
-        $('button', td[7]).dataset.cbAccion = 'principal';
-        $('button', td[7]).addEventListener('click', function () { facturar(r); });
-      }
-      var ver = document.createElement('button'); ver.type = 'button'; ver.textContent = 'Ver remito'; ver.className = BTN;
-      ver.dataset.cbAccion = 'secundaria';
-      ver.addEventListener('click', function () { verRemito(r, render); }); td[7].prepend(ver);
-      return tr;
+    if (clave === 'mes' || clave === 'anterior') {
+      x = d(HOY.slice(0, 7) + '-01'); if (clave === 'anterior') x.setMonth(x.getMonth() - 1);
+      inicio = x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-01';
+      x.setMonth(x.getMonth() + 1); x.setDate(0);
+      fin = x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-' + ('0' + x.getDate()).slice(-2);
     }
+    if (clave === 'todas') inicio = fin = '';
+    return [inicio, fin];
+  }
+  function fechaLarga(iso) { return iso ? fechaCorta(iso) + '/' + iso.slice(0, 4) : ''; }
+  function cabeceraPagina(titulo, subtitulo, botonesHtml) {
+    var main = $('main'), header = $('header', main);
+    $('h1', header).textContent = titulo;
+    if (subtitulo) { var p = document.createElement('p'); p.className = 'text-sm text-on-surface-variant'; p.textContent = subtitulo; $('h1', header).after(p); $('h1', header).parentElement.classList.add('flex-col', 'items-start'); $('h1', header).parentElement.classList.remove('items-center'); }
+    $('header > div:last-child', main).innerHTML = botonesHtml;
+    Array.prototype.slice.call(main.children).forEach(function (el) { if (el !== header) el.remove(); });
+    var cont = document.createElement('div'); cont.className = 'flex-1 overflow-y-auto pb-space-lg'; main.appendChild(cont);
+    return cont;
+  }
+  function atajosHtml(claves) {
+    var nombres = { hoy: 'Hoy', semana: 'Esta semana', semanaAnterior: 'Semana anterior', mes: 'Este mes', anterior: 'Mes anterior', todas: 'Todas' };
+    return '<div class="flex flex-wrap items-center gap-1" data-atajos>' + claves.map(function (k) { return '<button type="button" data-cb-periodo data-atajo="' + k + '" aria-pressed="false">' + nombres[k] + '</button>'; }).join('') + '</div>';
+  }
+
+  // ── REMITOS DE EMPRESA (empleadas y dueño) ────────────────────────
+  // Ven, corrigen y reimprimen los remitos con forma de pago Empresa. Sin importes ni facturación.
+  if (VISTA === 'remitos') (function () {
+    document.title = 'Remitos | CLEANBOX Tintorería';
+    var cont = cabeceraPagina('Remitos de empresa', 'Remitos con forma de pago Empresa. No entran en la caja: acá se ven, se corrigen y se vuelven a imprimir.',
+      '<a href="venta.html" data-cb-accion="secundaria" class="' + BTN + ' inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">add</span>Nuevo remito</a>');
+    cont.innerHTML = '<div data-emp-filtros class="flex flex-wrap items-end gap-3">' +
+      campo('Empresa', '<input data-rem-buscar aria-label="Buscar empresa" placeholder="Todas las empresas" class="' + INPUT + '" style="min-width:240px">') +
+      campo('Desde', '<input data-rem-desde type="date" aria-label="Desde fecha" class="' + INPUT + '">') + campo('Hasta', '<input data-rem-hasta type="date" aria-label="Hasta fecha" class="' + INPUT + '">') +
+      atajosHtml(['hoy', 'semana', 'mes', 'todas']) + '</div>' +
+      '<section class="mx-space-lg mt-space-md bg-surface border border-outline rounded-lg overflow-hidden">' +
+      '<div class="overflow-x-auto"><table data-cb-tabla class="w-full text-left border-collapse"><thead><tr class="bg-surface-container border-b border-outline text-[12px] uppercase tracking-wider text-on-surface-variant">' +
+      '<th class="py-3 px-space-md">Fecha</th><th class="py-3 px-space-md">Remito</th><th class="py-3 px-space-md">Empresa</th><th class="py-3 px-space-md">Prendas</th><th class="py-3 px-space-md text-right">Acciones</th></tr></thead>' +
+      '<tbody class="divide-y divide-outline text-sm text-on-surface"></tbody></table></div>' +
+      '<div class="px-space-md py-3 bg-surface-container border-t border-outline flex flex-wrap items-center justify-between gap-2"><span data-rem-resumen role="status" class="font-label-md text-xs font-bold text-on-surface"></span>' +
+      '<span class="text-xs text-on-surface-variant">La facturación de empresas la hace el dueño desde su sección.</span></div></section>';
+    var buscar = $('[data-rem-buscar]', cont), desde = $('[data-rem-desde]', cont), hasta = $('[data-rem-hasta]', cont), tbody = $('tbody', cont);
+    var atajos = $$('[data-atajo]', cont);
+    function marcar(clave) { atajos.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.atajo === clave)); }); }
+    function periodo(clave) { var r = rangoPeriodo(clave); desde.value = r[0]; hasta.value = r[1]; marcar(clave); render(); }
+    atajos.forEach(function (b) { b.addEventListener('click', function () { periodo(b.dataset.atajo); }); });
+    [desde, hasta].forEach(function (i) { i.addEventListener('input', function () { marcar(''); render(); }); });
+    buscar.addEventListener('input', render);
+    var lista = [];
     function render() {
-      var t = norm(cliIn.value);
-      if (filtros.error()) {
-        tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-error">' + esc(filtros.error()) + '</td></tr>'; filtros.resumen([]);
-        var resumenError = $$('main span').filter(function (s) { return /remitos ·|remito ·|Revisar filtros/.test(s.textContent); })[0];
-        if (resumenError) resumenError.textContent = 'Revisar filtros';
-        $$('main span.font-headline-md').pop().textContent = '—'; return;
-      }
-      var vis = REM.filter(function (r) {
-        var f = S.facturas[r.remito];
-        return (!t || norm(r.cliente).indexOf(t) >= 0) && (!desde.value || r.iso >= desde.value) && (!hasta.value || r.iso <= hasta.value) &&
-          filtros.coincide(r) && (estado === 'todas' || (estado === 'sin' ? !f : !!f));
-      }).sort(function (a, b) { return a.iso < b.iso ? -1 : 1; });
-      tbody.innerHTML = '';
-      vis.forEach(function (r) { tbody.appendChild(fila(r)); });
-      filtros.resumen(vis);
-      if (!vis.length) tbody.innerHTML = '<tr><td colspan="8" class="py-space-lg px-space-md text-center text-on-surface-variant">No hay remitos con estos filtros.</td></tr>';
-      var sin = vis.filter(function (r) { return !S.facturas[r.remito] && r.tipo === 'empresa'; });
-      var resumen = $$('main span').filter(function (s) { return /remitos ·|remito ·|Revisar filtros/.test(s.textContent); })[0];
-      if (resumen) resumen.textContent = vis.length + (vis.length === 1 ? ' remito' : ' remitos') + ' · ' + sin.length + ' sin facturar';
-      var pend = $$('main span.font-headline-md').pop();
-      pend.textContent = plata(sin.reduce(function (a, r) { return a + r.total; }, 0));
+      var q = norm(buscar.value);
+      if (desde.value && hasta.value && desde.value > hasta.value) { tbody.innerHTML = '<tr><td colspan="5" class="py-4 px-space-md text-error">Revisá el rango de fechas</td></tr>'; $('[data-rem-resumen]', cont).textContent = 'Revisar fechas'; return; }
+      lista = ventas().filter(function (v) {
+        return v.cuentaEmpresa && (!q || norm(v.cliente).indexOf(q) >= 0) && (!desde.value || v.iso >= desde.value) && (!hasta.value || v.iso <= hasta.value);
+      }).sort(function (a, b) { return a.iso === b.iso ? (a.remito < b.remito ? 1 : -1) : a.iso < b.iso ? 1 : -1; });
+      tbody.innerHTML = lista.map(function (v, i) {
+        return '<tr data-rem-fila="' + esc(v.remito) + '" class="hover:bg-surface-container-low">' +
+          '<td class="py-3 px-space-md whitespace-nowrap text-on-surface-variant">' + esc(fechaLarga(v.iso)) + '</td>' +
+          '<td class="py-3 px-space-md" data-cb-numero>' + esc(v.remito) + '</td>' +
+          '<td class="py-3 px-space-md font-bold">' + esc(v.cliente) + '</td>' +
+          '<td class="py-3 px-space-md">' + esc(detalleVenta(v)) + (v.correcciones && v.correcciones.length ? ' <span class="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-secondary-fixed text-on-secondary-fixed-variant">Corregido</span>' : '') + '</td>' +
+          '<td class="py-3 px-space-md text-right whitespace-nowrap"><button type="button" data-rem-ver="' + i + '" data-cb-accion="terciaria" class="' + BTN + '">Ver</button> ' +
+          '<button type="button" data-rem-corregir="' + i + '" data-cb-accion="secundaria" class="' + BTN + '">Corregir</button> ' +
+          '<button type="button" data-rem-imprimir="' + i + '" data-cb-accion="secundaria" class="' + BTN + '">Imprimir</button></td></tr>';
+      }).join('') || '<tr><td colspan="5" class="py-space-lg px-space-md text-center text-on-surface-variant">No hay remitos de empresa con estos filtros.</td></tr>';
+      var unidades = lista.reduce(function (n, v) { return n + (v.items || []).reduce(function (m, it) { return m + it.cant; }, 0); }, 0);
+      $('[data-rem-resumen]', cont).textContent = lista.length + (lista.length === 1 ? ' remito' : ' remitos') + ' · ' + unidades + ' prendas';
     }
-    function facturar(r) {
-      var c = clientePorNombre(r.cliente) || {};
-      var neto = r.total / 1.21, iva = r.total - neto;
-      var cuerpo = document.createElement('div');
-      cuerpo.className = 'flex flex-col gap-3 text-[14px]';
-      cuerpo.innerHTML = '<div class="p-3 rounded bg-surface-container-low border border-outline flex flex-col gap-1">' +
-        '<div class="flex justify-between"><span class="text-on-surface-variant">Cliente</span><b>' + esc(r.cliente) + '</b></div>' +
-        '<div class="flex justify-between"><span class="text-on-surface-variant">CUIT</span><span>' + esc(c.cuit || '—') + '</span></div>' +
-        '<div class="flex justify-between"><span class="text-on-surface-variant">Remito</span><span>' + esc(r.remito) + ' · ' + esc(detalleVenta(r)) + '</span></div></div>' +
-        '<div class="flex flex-col gap-1"><div class="flex justify-between"><span>Neto gravado</span><span>' + plata(neto) + '</span></div>' +
-        '<div class="flex justify-between"><span>IVA 21%</span><span>' + plata(iva) + '</span></div>' +
-        '<div class="flex justify-between font-headline-md text-[20px] font-bold text-primary border-t border-outline pt-2"><span>Total factura A</span><span>' + plata(r.total) + '</span></div></div>' +
-        '<p class="text-[12px] text-on-surface-variant">Demo: no se envía a ARCA. En el sistema real se pide el CAE y se guarda el PDF.</p>';
-      modal('Emitir factura A', cuerpo, [
-        { texto: 'Emitir factura A', primario: true, accion: function () {
-          var num = 'A 0003-' + ('00000000' + S.sigFactura++).slice(-8);
-          S.facturas[r.remito] = num; save(); render();
-          toast('Factura ' + num + ' emitida (demo)');
-        } },
-        { texto: 'Cancelar', accion: function () {} }
-      ]);
+    tbody.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-rem-ver],[data-rem-corregir],[data-rem-imprimir]'); if (!b) return;
+      var v = lista[+(b.dataset.remVer || b.dataset.remCorregir || b.dataset.remImprimir)];
+      if (b.hasAttribute('data-rem-ver')) verRemito(v, render);
+      else if (b.hasAttribute('data-rem-corregir')) corregirRemito(v, render);
+      else imprimirTicket(v);
+    });
+    var params = new URLSearchParams(location.search), cli = params.get('clienteId') ? S.clientes.filter(function (c) { return c.id === params.get('clienteId'); })[0] : null;
+    if (cli) buscar.value = cli.nombre;
+    periodo(cli || params.get('remito') ? 'todas' : 'semana');
+    var abrir = ventas().filter(function (v) { return v.remito === params.get('remito'); })[0]; if (abrir) verRemito(abrir, render);
+  })();
+
+  // ── EMPRESAS (antes Facturar; sólo el dueño) ──────────────────────
+  // Filtra por empresa y período, suma las cantidades de todos los remitos y arma una sola factura.
+  if (VISTA === 'facturar') (function () {
+    document.title = 'Empresas | CLEANBOX Tintorería';
+    var empresas = S.clientes.filter(function (c) { return c.tipo === 'empresa'; });
+    var cont = cabeceraPagina('Empresas', 'Cantidades de los remitos de empresa y facturación del período. Sólo la ve el dueño.',
+      '<button type="button" data-emp-libre data-cb-accion="secundaria" class="' + BTN + '">Factura libre</button>' +
+      '<button type="button" data-emp-facturas data-cb-accion="secundaria" class="' + BTN + '"></button>');
+    cont.innerHTML = '<div data-emp-filtros class="flex flex-col gap-3"><div class="flex flex-wrap items-end gap-3">' +
+      campo('Empresa', '<select data-emp-cliente aria-label="Empresa" class="' + INPUT + '" style="min-width:240px"><option value="">Todas las empresas</option>' +
+        empresas.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.nombre) + '</option>'; }).join('') + '</select>') +
+      campo('Desde', '<input data-emp-desde type="date" aria-label="Desde fecha" class="' + INPUT + '">') + campo('Hasta', '<input data-emp-hasta type="date" aria-label="Hasta fecha" class="' + INPUT + '">') +
+      atajosHtml(['mes', 'anterior', 'semana', 'semanaAnterior', 'hoy']) + '</div>' +
+      '<div class="flex flex-wrap items-end gap-3">' + campo('Artículo (opcional)', '<input data-emp-articulo aria-label="Filtrar artículo" placeholder="Todos los artículos" class="' + INPUT + '" style="min-width:240px">') +
+      '<label class="text-sm text-on-surface flex items-center gap-2 pb-2"><input type="checkbox" data-emp-local> Incluir también ventas a empresas hechas en el mostrador (con cobro o deuda del local)</label></div></div>' +
+      '<div class="mx-space-lg mt-space-md grid gap-space-md items-start" style="grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr)">' +
+      '<section data-emp-cantidades class="bg-surface rounded-lg overflow-hidden">' +
+      '<div class="px-space-md py-3 border-b border-outline flex flex-wrap items-baseline justify-between gap-2"><h2 class="font-headline-md text-[18px] font-bold text-on-surface">Cantidades del período</h2><span data-emp-sub class="text-xs text-on-surface-variant"></span></div>' +
+      '<table data-cb-tabla class="w-full text-left border-collapse"><thead><tr class="bg-surface-container-low border-b border-outline text-[12px] uppercase tracking-wider text-on-surface-variant">' +
+      '<th class="py-2 px-space-md">Artículo</th><th class="py-2 px-space-md text-right">Cantidad</th><th class="py-2 px-space-md text-right">En remitos</th></tr></thead><tbody></tbody></table></section>' +
+      '<aside data-emp-resumen class="bg-surface rounded-lg p-space-md flex flex-col gap-3">' +
+      '<span class="text-[12px] uppercase tracking-wider font-bold text-on-surface-variant">Para facturar</span>' +
+      '<div data-emp-res-nombre class="font-headline-md text-[20px] font-bold text-on-surface leading-tight"></div><div data-emp-res-periodo class="text-sm text-on-surface-variant"></div>' +
+      '<div data-cb-resumen style="grid-template-columns:repeat(2,minmax(0,1fr))"><div><span>Remitos</span><strong data-emp-res-remitos></strong></div><div><span>Prendas</span><strong data-emp-res-unidades></strong></div></div>' +
+      '<button type="button" data-emp-armar data-cb-accion="principal" class="rounded font-label-md">Armar factura con estas cantidades</button>' +
+      '<p data-emp-res-ayuda class="text-xs text-on-surface-variant"></p></aside></div>' +
+      '<section class="mx-space-lg mt-space-md bg-surface border border-outline rounded-lg overflow-hidden">' +
+      '<div class="px-space-md py-3 border-b border-outline flex items-baseline justify-between gap-2"><h2 class="font-headline-md text-[18px] font-bold text-on-surface">Remitos del período</h2><span data-emp-rem-cuenta class="text-xs text-on-surface-variant"></span></div>' +
+      '<div class="overflow-x-auto"><table data-cb-tabla class="w-full text-left border-collapse"><thead><tr class="bg-surface-container border-b border-outline text-[12px] uppercase tracking-wider text-on-surface-variant">' +
+      '<th class="py-2 px-space-md">Fecha</th><th class="py-2 px-space-md">Remito</th><th class="py-2 px-space-md">Empresa</th><th class="py-2 px-space-md">Prendas</th><th class="py-2 px-space-md"></th></tr></thead>' +
+      '<tbody data-emp-remitos class="divide-y divide-outline text-sm text-on-surface"></tbody></table></div></section>';
+    var sel = $('[data-emp-cliente]', cont), desde = $('[data-emp-desde]', cont), hasta = $('[data-emp-hasta]', cont), articulo = $('[data-emp-articulo]', cont), local = $('[data-emp-local]', cont);
+    var atajos = $$('[data-atajo]', cont), btnFacturas = $('[data-emp-facturas]'), armar = $('[data-emp-armar]', cont);
+    var actual = { remitos: [], grupos: [] };
+    function marcar(clave) { atajos.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.atajo === clave)); }); }
+    function periodo(clave) { var r = rangoPeriodo(clave); desde.value = r[0]; hasta.value = r[1]; marcar(clave); render(); }
+    atajos.forEach(function (b) { b.addEventListener('click', function () { periodo(b.dataset.atajo); }); });
+    [desde, hasta].forEach(function (i) { i.addEventListener('input', function () { marcar(''); render(); }); });
+    [sel, local].forEach(function (i) { i.addEventListener('change', render); });
+    articulo.addEventListener('input', render);
+    function pintarFacturas() { btnFacturas.textContent = 'Facturas emitidas · ' + (S.facturasEmitidas || []).length; }
+    function coincideArticulo(it) { return !articulo.value.trim() || norm(it.nombre).indexOf(norm(articulo.value)) >= 0; }
+    function render() {
+      var error = desde.value && hasta.value && desde.value > hasta.value;
+      var remitos = error ? [] : ventas().filter(function (v) {
+        var c = clienteRegistro(v);
+        return v.tipo === 'empresa' && (v.cuentaEmpresa || (local.checked && !v.cuentaEmpresa)) && (!sel.value || (c && c.id === sel.value)) &&
+          (!desde.value || v.iso >= desde.value) && (!hasta.value || v.iso <= hasta.value) && (v.items || []).some(coincideArticulo);
+      }).sort(function (a, b) { return a.iso === b.iso ? (a.remito < b.remito ? -1 : 1) : a.iso < b.iso ? -1 : 1; });
+      // Agrupa por empresa y artículo; cada remito cuenta una vez por artículo.
+      var porEmpresa = {}, orden = [];
+      remitos.forEach(function (v) {
+        var c = clienteRegistro(v), clave = c ? c.id : 'sin:' + v.cliente;
+        if (!porEmpresa[clave]) { porEmpresa[clave] = { nombre: c ? c.nombre : v.cliente, cliente: c, articulos: {}, ordenArt: [] }; orden.push(clave); }
+        var g = porEmpresa[clave];
+        (v.items || []).filter(coincideArticulo).forEach(function (it) {
+          var k = norm(it.nombre);
+          if (!g.articulos[k]) { g.articulos[k] = { nombre: it.nombre, cantidad: 0, remitos: {} }; g.ordenArt.push(k); }
+          g.articulos[k].cantidad += it.cant; g.articulos[k].remitos[v.remito] = true;
+        });
+      });
+      actual = { remitos: remitos, grupos: orden.map(function (k) { return porEmpresa[k]; }) };
+      var unidades = 0, filas = [];
+      actual.grupos.forEach(function (g) {
+        var arts = g.ordenArt.map(function (k) { return g.articulos[k]; }).sort(function (a, b) { return b.cantidad - a.cantidad; });
+        if (!sel.value) filas.push('<tr data-emp-grupo><td colspan="3" class="py-2 px-space-md">' + esc(g.nombre) + '</td></tr>');
+        arts.forEach(function (a) {
+          unidades += a.cantidad;
+          filas.push('<tr><td class="py-2.5 px-space-md font-label-md text-on-surface">' + esc(a.nombre) + '</td><td class="py-2.5 px-space-md text-right" data-emp-cant>' + a.cantidad.toLocaleString('es-AR') + '</td>' +
+            '<td class="py-2.5 px-space-md text-right text-xs text-on-surface-variant">' + Object.keys(a.remitos).length + '</td></tr>');
+        });
+      });
+      $('tbody', $('[data-emp-cantidades]', cont)).innerHTML = error ? '<tr><td colspan="3" class="py-4 px-space-md text-error">Revisá el rango de fechas</td></tr>'
+        : filas.join('') || '<tr><td colspan="3" class="py-space-lg px-space-md text-center text-on-surface-variant">No hay remitos de empresa con estos filtros.</td></tr>';
+      var nombrePeriodo = desde.value || hasta.value ? (desde.value ? fechaLarga(desde.value) : 'el inicio') + ' al ' + (hasta.value ? fechaLarga(hasta.value) : 'hoy') : 'Todas las fechas';
+      $('[data-emp-sub]', cont).textContent = nombrePeriodo + (articulo.value.trim() ? ' · artículo «' + articulo.value.trim() + '»' : '');
+      var empresa = sel.value ? empresas.filter(function (c) { return c.id === sel.value; })[0] : null;
+      $('[data-emp-res-nombre]', cont).textContent = empresa ? empresa.nombre : 'Todas las empresas';
+      $('[data-emp-res-periodo]', cont).textContent = nombrePeriodo;
+      $('[data-emp-res-remitos]', cont).textContent = remitos.length; $('[data-emp-res-unidades]', cont).textContent = unidades.toLocaleString('es-AR');
+      var puede = !!empresa && remitos.length > 0;
+      armar.disabled = !puede;
+      $('[data-emp-res-ayuda]', cont).textContent = !empresa ? 'Elegí una empresa para armar su factura del período.' : !remitos.length ? 'No hay remitos para facturar en este período.'
+        : 'Se cargan las cantidades con los precios de la lista. Podés cambiar precios, renglones y observaciones antes de emitir.';
+      $('[data-emp-rem-cuenta]', cont).textContent = remitos.length + (remitos.length === 1 ? ' remito' : ' remitos');
+      $('[data-emp-remitos]', cont).innerHTML = remitos.map(function (v, i) {
+        return '<tr class="hover:bg-surface-container-low"><td class="py-2.5 px-space-md whitespace-nowrap text-on-surface-variant">' + esc(fechaLarga(v.iso)) + '</td><td class="py-2.5 px-space-md" data-cb-numero>' + esc(v.remito) + '</td>' +
+          '<td class="py-2.5 px-space-md font-bold">' + esc(v.cliente) + '</td><td class="py-2.5 px-space-md">' + esc(detalleVenta(v)) +
+          (v.cuentaEmpresa ? '' : ' <span class="ml-1 inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-surface-container-high text-on-surface-variant">Venta del mostrador</span>') + '</td>' +
+          '<td class="py-2.5 px-space-md text-right"><button type="button" data-emp-ver="' + i + '" data-cb-accion="secundaria" class="' + BTN + '">Ver remito</button></td></tr>';
+      }).join('') || '<tr><td colspan="5" class="py-space-lg px-space-md text-center text-on-surface-variant">Sin remitos en el período.</td></tr>';
     }
-    function pdf(r, num) {
-      var N = S.negocio, c = clientePorNombre(r.cliente) || {};
-      var neto = r.total / 1.21;
-      var w = window.open('', '_blank', 'width=800,height=900');
-      if (!w) { toast('El navegador bloqueó la ventana', 'error'); return; }
-      w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Factura ' + esc(num) + '</title><style>' +
-        'body{font:14px/1.5 Arial,sans-serif;color:#17262f;max-width:720px;margin:24px auto;padding:0 16px}' +
-        '.top{display:flex;justify-content:space-between;border:1px solid #b9c9d2;padding:16px}.A{font:700 40px Arial;border:2px solid #17262f;width:56px;text-align:center;align-self:flex-start}' +
-        'table{width:100%;border-collapse:collapse;margin-top:16px}td,th{border-bottom:1px solid #e3edf2;padding:6px;text-align:left}.r{text-align:right}' +
-        '.demo{margin-top:24px;padding:8px;border:1px dashed #b3261e;color:#b3261e;text-align:center;font-weight:700}' +
-        '</style></head><body><div class="top"><div>' + (N.logo ? '<img src="' + N.logo + '" style="max-height:60px"><br>' : '<b style="font-size:22px;color:#0f7799">CLEANBOX</b><br>') +
-        esc(N.direccion) + '<br>IVA Responsable Inscripto</div><div class="A">A</div><div class="r"><b>FACTURA</b><br>N° ' + esc(num.replace('A ', '')) + '<br>Fecha: ' + fechaCorta(HOY) + '/2026</div></div>' +
-        '<p><b>' + esc(r.cliente) + '</b><br>CUIT ' + esc(c.cuit || '') + ' · IVA Responsable Inscripto<br>Remito ' + esc(r.remito) + '</p>' +
-        '<table><tr><th>Detalle</th><th class="r">Importe</th></tr><tr><td>' + esc(detalleVenta(r)) + '</td><td class="r">' + plata(neto) + '</td></tr>' +
-        '<tr><td class="r">Neto gravado</td><td class="r">' + plata(neto) + '</td></tr><tr><td class="r">IVA 21%</td><td class="r">' + plata(r.total - neto) + '</td></tr>' +
-        '<tr><th class="r">TOTAL</th><th class="r">' + plata(r.total) + '</th></tr></table>' +
-        '<div class="demo">DEMO SIN VALIDEZ FISCAL · sin CAE</div></body></html>');
-      w.document.close();
-    }
-    render();
+    $('[data-emp-remitos]', cont).addEventListener('click', function (e) { var b = e.target.closest('[data-emp-ver]'); if (b) verRemito(actual.remitos[+b.dataset.empVer], render); });
+    armar.addEventListener('click', function () {
+      var g = actual.grupos[0]; if (armar.disabled || !g) return;
+      var renglones = g.ordenArt.map(function (k) { return g.articulos[k]; }).sort(function (a, b) { return b.cantidad - a.cantidad; })
+        .map(function (a) { return { nombre: a.nombre, cant: a.cantidad, precio: precioDe(a.nombre) }; });
+      var nros = actual.remitos.map(function (v) { return v.remito; });
+      var lista = nros.length > 1 ? nros.slice(0, -1).join(', ') + ' y ' + nros[nros.length - 1] : nros[0];
+      abrirFactura({ titulo: 'Factura del período · ' + g.nombre, cliente: g.cliente, renglones: renglones, remitos: nros,
+        periodo: desde.value && hasta.value ? fechaLarga(desde.value) + ' al ' + fechaLarga(hasta.value) : '',
+        observaciones: 'Corresponde a ' + (nros.length > 1 ? 'remitos ' : 'remito ') + lista + '.', alEmitir: pintarFacturas });
+    });
+    $('[data-emp-libre]').addEventListener('click', function () {
+      abrirFactura({ titulo: 'Factura libre', cliente: sel.value ? empresas.filter(function (c) { return c.id === sel.value; })[0] : null, alEmitir: pintarFacturas });
+    });
+    btnFacturas.addEventListener('click', function () { verFacturas(sel.value); });
+    var pre = new URLSearchParams(location.search).get('clienteId');
+    if (pre && empresas.some(function (c) { return c.id === pre; })) sel.value = pre;
+    pintarFacturas(); periodo('mes');
   })();
 
   // ── AJUSTES ───────────────────────────────────────────────────────
   if (VISTA === 'ajustes') (function () {
     // Módulos ocultables (patrón de Comandera: settings.modulosOcultos)
-    var MAP = { 'Clientes': 'clientes', 'Facturar': 'facturar', 'Presupuestos': 'presupuestos', 'Precios': 'precios' };
+    var MAP = { 'Clientes': 'clientes', 'Empresas': 'facturar', 'Presupuestos': 'presupuestos', 'Precios': 'precios' };
+    // La pantalla Facturar pasó a ser Empresas (remitos de empresa y facturación del dueño).
+    $$('#modulos h3').forEach(function (h) {
+      if (h.textContent.trim() !== 'Facturar') return;
+      h.textContent = 'Empresas';
+      var desc = h.nextElementSibling || h.parentElement.querySelector('p');
+      if (desc) desc.textContent = 'Cantidades de los remitos de empresa y facturación del mes. Sólo la ve el dueño.';
+      var ico = h.parentElement.parentElement.querySelector('.material-symbols-outlined'); if (ico) ico.textContent = 'domain';
+    });
     $$('#modulos input[type="checkbox"]').forEach(function (chk) {
       var fila = chk.closest('div.p-space-md'), nombre = $('h3', fila).textContent.trim(), id = MAP[nombre];
       if (!id) return;
@@ -1705,7 +2180,7 @@
     var tema = window.tailwind && window.tailwind.config && window.tailwind.config.theme;
     if (!tema || !tema.extend || !tema.extend.colors) return;
     var colores = tema.extend.colors, css = document.createElement('style'); css.setAttribute('data-cb-jerarquia', '');
-    var nombres = ['primary', 'on-primary', 'on-primary-fixed-variant', 'primary-fixed', 'secondary', 'secondary-fixed', 'on-secondary-fixed-variant', 'tertiary-container', 'surface', 'surface-container-low', 'on-surface', 'on-surface-variant', 'outline', 'tertiary-fixed', 'on-tertiary-fixed-variant'];
+    var nombres = ['primary', 'on-primary', 'on-primary-fixed-variant', 'primary-fixed', 'secondary', 'secondary-fixed', 'on-secondary-fixed-variant', 'tertiary-container', 'surface', 'surface-container-low', 'on-surface', 'on-surface-variant', 'outline', 'tertiary-fixed', 'on-tertiary-fixed-variant', 'error'];
     css.textContent = ':root{' + nombres.map(function (n) { return '--cb-' + n + ':' + colores[n] + ';'; }).join('') + '}' +
       '@media screen{' +
       'body [data-cb-importe],body [data-cb-numero],body input[type=number]{font-variant-numeric:tabular-nums lining-nums}' +
@@ -1743,7 +2218,7 @@
       'body[data-view=venta] main>section:last-child{border-left:3px solid var(--cb-primary)}' +
       'body [data-renglon]{border:2px solid var(--cb-outline);border-left:5px solid var(--cb-primary);background:var(--cb-surface);padding:8px;gap:6px}' +
       'body [data-renglon]>label>input{border-color:var(--cb-primary);background:var(--cb-surface);font-weight:700;font-size:14px;line-height:20px;padding:6px 8px}' +
-      'body [data-renglon-valores]{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;font-size:12px}' +
+      'body [data-renglon-valores]{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:6px;font-size:12px}' +
       'body [data-renglon-valores]>label{min-width:0;white-space:nowrap}' +
       'body [data-renglon-valores] input{width:100%;padding:4px 6px;min-width:0}' +
       'body [data-cb-cantidad]{gap:2px}' +
@@ -1784,6 +2259,21 @@
       'body [data-cb-pres-cab] h3,body [data-cb-pres-cab] span{color:var(--cb-on-primary)}' +
       'body [data-cb-presupuesto=total]{background:var(--cb-primary-fixed);border-color:var(--cb-primary)}' +
       'body[data-view=presupuestos] main>section:last-child .w-64{border:2px solid var(--cb-primary);padding:12px}' +
+      // Remitos de empresa y Empresas: empresas en azul (secondary), como en Clientes.
+      'body [data-emp-filtros]{margin:16px 24px 0;padding:16px;border:2px solid var(--cb-outline);border-left:5px solid var(--cb-secondary);border-radius:8px;background:var(--cb-surface-container-low)}' +
+      'body [data-emp-filtros] input,body [data-emp-filtros] select{border-color:var(--cb-secondary);background:var(--cb-surface);font-weight:600}' +
+      'body [data-emp-filtros] [data-cb-periodo][aria-pressed=true]{background:var(--cb-secondary);border-color:var(--cb-secondary)}' +
+      'body [data-emp-cantidades],body [data-emp-resumen]{border:2px solid var(--cb-outline);border-left:5px solid var(--cb-secondary)}' +
+      'body [data-emp-cant]{font-family:Outfit,sans-serif;font-size:22px;font-weight:700;color:var(--cb-on-secondary-fixed-variant);font-variant-numeric:tabular-nums;white-space:nowrap}' +
+      'body [data-emp-grupo] td{background:var(--cb-secondary-fixed);color:var(--cb-on-secondary-fixed-variant);font-weight:700;font-size:14px}' +
+      'body [data-emp-resumen] [data-cb-resumen] strong{color:var(--cb-on-secondary-fixed-variant)}' +
+      'body [data-emp-armar]:disabled{cursor:not-allowed}' +
+      'body [data-cb-cuenta-empresa]{border-left:5px solid var(--cb-secondary);background:var(--cb-secondary-fixed)}' +
+      'body [data-cb-cuenta-empresa] b,body [data-cb-cuenta-empresa] span{color:var(--cb-on-secondary-fixed-variant)}' +
+      'body[data-view=venta] main>section:last-child[data-cb-remito-empresa=true]{border-left-color:var(--cb-secondary)}' +
+      'body [data-cb-remito-empresa=true] span.uppercase{color:var(--cb-secondary)}' +
+      'body [data-modo-empresa][aria-pressed=true]{background:var(--cb-secondary);border-color:var(--cb-secondary);color:var(--cb-on-primary)}' +
+      'body [data-corregir] input[aria-invalid=true],body [data-factura-form] input[aria-invalid=true],body [data-cant][aria-invalid=true]{border-color:var(--cb-error)}' +
       '@media(max-width:520px){body [data-cb-resumen]{grid-template-columns:1fr}body [data-cb-resumen] strong{font-size:24px}}}';
     document.head.appendChild(css);
     if (['caja', 'facturar', 'precios'].indexOf(VISTA) >= 0) $$('main table').forEach(function (t) { t.setAttribute('data-cb-tabla', ''); });

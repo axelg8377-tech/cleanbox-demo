@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Remitos de empresa | CLEANBOX Tintorería</title>
+<!-- Google Fonts: Outfit & Atkinson Hyperlegible -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&amp;family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#005d79",
+            "background": "#f3f7f9",
+            "outline": "#b9c9d2",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#ffdcbe",
+            "surface-dim": "#d7dadd",
+            "primary-container": "#0f7799",
+            "on-surface-variant": "#3f484d",
+            "primary-fixed-dim": "#7fd1f6",
+            "error": "#b3261e",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed-variant": "#004d65",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-error-container": "#93000a",
+            "surface-container-highest": "#e0e3e6",
+            "secondary": "#2a5ea6",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-surface": "#181c1e",
+            "surface": "#fbfdfe",
+            "tertiary-container": "#9c601b",
+            "on-tertiary-fixed": "#2d1600",
+            "surface-container": "#ebeef1",
+            "outline-variant": "#bec8ce",
+            "on-secondary-fixed-variant": "#00468c",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#004286",
+            "on-primary-container": "#e3f5ff",
+            "inverse-on-surface": "#eef1f4",
+            "surface-container-low": "#f1f4f7",
+            "surface-variant": "#e0e3e6",
+            "on-primary-fixed": "#001f2a",
+            "surface-bright": "#f7fafd",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006685",
+            "on-primary": "#f7fcfe",
+            "tertiary-fixed-dim": "#ffb872",
+            "secondary-container": "#83b1ff",
+            "on-background": "#181c1e",
+            "on-tertiary-container": "#ffefe3",
+            "secondary-fixed": "#d6e3ff",
+            "inverse-primary": "#7fd1f6",
+            "surface-container-high": "#e6e8eb",
+            "on-tertiary-fixed-variant": "#6a3c00",
+            "primary-fixed": "#bfe9ff",
+            "tertiary": "#c98a12",
+            "inverse-surface": "#2d3133"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "gutter": "16px",
+            "space-xs": "4px",
+            "space-sm": "8px",
+            "space-xl": "40px",
+            "space-lg": "24px",
+            "space-md": "16px",
+            "margin": "24px"
+          },
+          "fontFamily": {
+            "headline-md": ["Outfit"],
+            "display": ["Outfit"],
+            "label-md": ["Atkinson Hyperlegible"],
+            "body-md": ["Atkinson Hyperlegible"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["15px", { "lineHeight": "20px", "fontWeight": "700" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230f7799'/%3E%3C/svg%3E">
+</head>
+<body data-view="remitos" class="bg-background text-on-background font-body-md text-body-md antialiased h-full flex overflow-hidden">
+<!-- Side Navigation Bar (Fixed 240px) -->
+<aside class="w-[240px] h-screen flex flex-col justify-between bg-surface border-r border-outline shrink-0 z-40 select-none">
+<div class="flex flex-col">
+<div class="p-space-md border-b border-outline flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center border border-primary shrink-0 text-primary overflow-hidden" data-logo>
+<span class="material-symbols-outlined text-[24px]">dry_cleaning</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight leading-none">CLEANBOX</span>
+<span class="font-label-md text-[10px] tracking-widest text-on-surface-variant font-bold mt-1">TINTORERÍA</span>
+</div>
+</div>
+<nav aria-label="Navegación principal" class="p-space-md flex flex-col gap-1.5">
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="pedidos" href="index.html">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>Pedidos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="venta" href="venta.html">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+<span>Nueva venta</span>
+</a>
+<a class="flex items-center gap-space-sm bg-primary-container text-on-primary-container rounded-lg px-space-md py-space-sm font-label-md text-label-md active:scale-[0.98] transition-transform duration-100" data-nav="remitos" href="remitos.html">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span>Remitos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="clientes" href="clientes.html">
+<span class="material-symbols-outlined text-[20px]">people</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="caja" href="caja.html">
+<span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+<span>Caja</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="facturar" href="facturar.html">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span>Empresas</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="presupuestos" href="presupuestos.html">
+<span class="material-symbols-outlined text-[20px]">request_quote</span>
+<span>Presupuestos</span>
+</a>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="precios" href="precios.html">
+<span class="material-symbols-outlined text-[20px]">sell</span>
+<span>Precios</span>
+</a>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<a class="flex items-center gap-space-sm text-on-surface-variant rounded-lg px-space-md py-space-sm font-label-md text-label-md hover:bg-surface-container transition-colors active:scale-[0.98]" data-nav="ajustes" href="ajustes.html">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="p-space-md border-t border-outline flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[26px]">account_circle</span>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-[13px] text-on-surface font-bold truncate" data-user-name>Hernán · Dueño</span>
+<span class="text-[11px] text-on-surface-variant" data-user-role>Administración</span>
+</div>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-[0.95] transition-colors" data-switch-user title="Cambiar de usuario (demo)" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas (Desktop 1280px optimized) -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-background">
+<!-- Top Action Bar / Header -->
+<header class="w-full px-space-lg py-space-md bg-surface border-b border-outline flex items-center justify-between shrink-0"><div class="flex items-center gap-3">
+<h1 class="font-display text-display text-on-surface font-bold tracking-tight">Facturar</h1>
+
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary-container hover:bg-primary text-on-primary-container font-label-md text-label-md px-space-md py-2 rounded-lg flex items-center gap-2 active:scale-[0.98] transition-[color,background-color,border-color,transform]" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Ver facturas emitidas</span>
+</button>
+</div></header>
+<!-- Sub-header Filter Tabs Bar -->
+<div class="w-full px-space-lg py-space-sm bg-surface border-b border-outline flex flex-wrap items-center justify-between gap-space-md shrink-0">
+<div class="flex flex-wrap items-center gap-3">
+<!-- Buscador de cliente -->
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low border border-outline rounded-lg text-xs font-medium text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+<span class="text-on-surface-variant">Cliente o bodega:</span>
+<span class="font-bold text-on-surface font-label-md">Bodega Piedra Alta</span>
+<button class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-error ml-1" type="button">close</button>
+</div>
+<!-- Rango de fechas -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-outline rounded-lg text-xs font-medium text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_today</span>
+<span class="text-on-surface-variant">Desde:</span>
+<span class="font-medium">01/10/2026</span>
+<span class="text-on-surface-variant mx-1">Hasta:</span>
+<span class="font-medium">31/10/2026</span>
+</div>
+<!-- Pills de atajo -->
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded text-xs font-label-md text-on-surface-variant hover:bg-surface-container transition-colors" type="button">Hoy</button>
+<button class="px-2.5 py-1 rounded text-xs font-label-md text-on-surface-variant hover:bg-surface-container transition-colors" type="button">Esta semana</button>
+<button class="px-2.5 py-1 rounded text-xs font-bold font-label-md bg-primary-container text-on-primary-container border border-primary" type="button">Este mes</button>
+</div>
+</div>
+<!-- Dropdown de estado -->
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-label-md">Filtrar:</span>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface border border-outline rounded-lg text-xs font-bold font-label-md text-on-surface hover:bg-surface-container transition-colors" type="button">
+<span>Estado: Sin facturar</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Board Content (3 Columns Kanban/Tags Layout) -->
+<div class="flex-1 p-space-lg overflow-y-auto"><div class="max-w-[1280px] flex flex-col gap-space-md">
+<!-- Tabla de Remitos y Ventas -->
+<div class="bg-surface border border-outline rounded-lg overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container border-b border-outline text-[12px] font-label-md uppercase tracking-wider text-on-surface-variant select-none">
+<th class="py-3 px-space-md font-bold">Fecha</th>
+<th class="py-3 px-space-md font-bold">N° Remito</th>
+<th class="py-3 px-space-md font-bold">Cliente</th>
+<th class="py-3 px-space-md font-bold">Detalle</th>
+<th class="py-3 px-space-md font-bold">Medio de pago</th>
+<th class="py-3 px-space-md font-bold text-right">Total</th>
+<th class="py-3 px-space-md font-bold text-center">Factura</th>
+<th class="py-3 px-space-md font-bold text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline text-xs text-on-surface font-body-md">
+<!-- Fila 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-md font-medium text-on-surface-variant">03/10/2026</td>
+<td class="py-3 px-space-md font-mono font-bold text-primary text-[13px]">R-0198</td>
+<td class="py-3 px-space-md font-bold font-label-md text-on-surface">Bodega Piedra Alta</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">6 bolsas institucional</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
+Transferencia
+</span>
+</td>
+<td class="py-3 px-space-md font-bold font-headline-md text-right text-on-surface text-[14px]">$39.000</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline-variant">
+Sin facturar
+</span>
+</td>
+<td class="py-3 px-space-md text-right">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs font-bold px-3 py-1.5 rounded active:scale-[0.98] transition-[color,background-color,border-color,transform] inline-flex items-center gap-1" type="button">
+<span>Facturar A</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Fila 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-md font-medium text-on-surface-variant">10/10/2026</td>
+<td class="py-3 px-space-md font-mono font-bold text-primary text-[13px]">R-0207</td>
+<td class="py-3 px-space-md font-bold font-label-md text-on-surface">Bodega Piedra Alta</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">4 bolsas + 2 manteles</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
+Transferencia
+</span>
+</td>
+<td class="py-3 px-space-md font-bold font-headline-md text-right text-on-surface text-[14px]">$34.000</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline-variant">
+Sin facturar
+</span>
+</td>
+<td class="py-3 px-space-md text-right">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs font-bold px-3 py-1.5 rounded active:scale-[0.98] transition-[color,background-color,border-color,transform] inline-flex items-center gap-1" type="button">
+<span>Facturar A</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Fila 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-md font-medium text-on-surface-variant">17/10/2026</td>
+<td class="py-3 px-space-md font-mono font-bold text-primary text-[13px]">R-0219</td>
+<td class="py-3 px-space-md font-bold font-label-md text-on-surface">Bodega Piedra Alta</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">8 bolsas</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-tertiary">payments</span>
+Efectivo
+</span>
+</td>
+<td class="py-3 px-space-md font-bold font-headline-md text-right text-on-surface text-[14px]">$52.000</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold font-label-md bg-surface-container-high text-on-surface-variant border border-outline-variant">
+Sin facturar
+</span>
+</td>
+<td class="py-3 px-space-md text-right">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs font-bold px-3 py-1.5 rounded active:scale-[0.98] transition-[color,background-color,border-color,transform] inline-flex items-center gap-1" type="button">
+<span>Facturar A</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Fila 4 -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-low/40">
+<td class="py-3 px-space-md font-medium text-on-surface-variant">24/10/2026</td>
+<td class="py-3 px-space-md font-mono font-bold text-primary text-[13px]">R-0231</td>
+<td class="py-3 px-space-md font-bold font-label-md text-on-surface">Bodega Piedra Alta</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">5 bolsas</td>
+<td class="py-3 px-space-md">
+<span class="inline-flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
+Transferencia
+</span>
+</td>
+<td class="py-3 px-space-md font-bold font-headline-md text-right text-on-surface text-[14px]">$32.500</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold font-label-md bg-primary-fixed text-on-primary-fixed-variant border border-outline-variant">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+A 0003-00000412
+</span>
+</td>
+<td class="py-3 px-space-md text-right">
+<div class="inline-flex items-center gap-1 justify-end">
+<button class="p-1.5 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container border border-outline-variant transition-colors" title="Ver PDF" type="button">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container border border-outline-variant transition-colors" title="Correo" type="button">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+</button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container border border-outline-variant transition-colors" title="WhatsApp" type="button">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pie de tabla -->
+<div class="px-space-md py-3 bg-surface-container border-t border-outline flex flex-wrap items-center justify-between gap-2 select-none">
+<div class="flex items-center gap-3">
+<span class="font-label-md text-xs font-bold text-on-surface">4 remitos · 3 sin facturar</span>
+<span class="text-outline-variant">|</span>
+<span class="text-xs text-on-surface-variant">Nota: Un remito = una factura</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs text-on-surface-variant font-medium">Total facturable pendiente:</span>
+<span class="font-headline-md text-[18px] font-bold text-primary tracking-tight">$125.000</span>
+</div>
+</div>
+</div>
+</div></div>
+</main>
+<script src="app.js"></script>
+</body></html>
