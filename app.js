@@ -10,6 +10,11 @@
   var NO_OCULTABLES = ['pedidos', 'venta', 'remitos', 'caja', 'ajustes'];
   var SOLO_DUENO = ['facturar', 'precios', 'ajustes'];
 
+  // Listos cuya fecha de entrega ya pasó: salen solos del tablero (pedido del cliente, 25/10).
+  var PEDIDOS_SIN_RETIRAR = [
+    { n: 202, cliente: 'Bodega Piedra Alta', clienteId: 'c1', detalle: '4 bolsas', entrega: '2026-10-22', estado: 'listo', hora: '09:40', iso: '2026-10-19' },
+    { n: 201, cliente: 'Martín Gómez', clienteId: 'c6', detalle: '1 saco', entrega: '2026-10-21', estado: 'listo', hora: '11:15', iso: '2026-10-18' }
+  ];
   var SEED = {
     usuario: 'hernan',
     ocultos: [],
@@ -32,13 +37,13 @@
       { n: 208, cliente: 'Martín Gómez', detalle: '1 traje', entrega: '2026-10-25', estado: 'preparacion', hora: '09:05' },
       { n: 205, cliente: 'Bodega Cerro Negro', detalle: '5 bolsas', nota: 'Planchado institucional', entrega: '2026-10-24', estado: 'listo', hora: '08:10' },
       { n: 204, cliente: 'Carla Sosa', detalle: '2 acolchados', nota: 'Lavado delicado pluma', entrega: '2026-10-24', estado: 'listo', hora: '08:30' }
-    ],
+    ].concat(PEDIDOS_SIN_RETIRAR),
     ventas: [],      // ventas nuevas hechas en la demo
     facturas: {},    // remito -> número de factura
     sigTicket: 418, sigRemito: 232, sigPedido: 215, sigFactura: 413
   };
 
-  SEED.pedidos.forEach(function (p, i) { p.iso = i < 3 ? HOY : '2026-10-23'; });
+  SEED.pedidos.forEach(function (p, i) { if (!p.iso) p.iso = i < 3 ? HOY : '2026-10-23'; });
   function load() {
     try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.clientes) return s; } catch (e) {}
     return JSON.parse(JSON.stringify(SEED));
@@ -148,6 +153,14 @@
     Object.keys(extra || {}).forEach(function (k) { r[k] = extra[k]; });
     return r;
   }
+  function ventaLocal(remito, iso, hora, clienteId, cliente, tipo, items, cobros) {
+    var r = { remito: remito, ticket: 'T-' + remito.slice(2), iso: iso, hora: hora, clienteId: clienteId, cliente: cliente, tipo: tipo,
+      items: items.map(function (it) { return { nombre: it[0], cant: it[1], precio: it[2] }; }),
+      pagos: cobros.map(function (c) { return { iso: iso, hora: hora, medio: c[0], importe: c[1] }; }) };
+    r.total = r.items.reduce(function (n, it) { return n + it.cant * it.precio; }, 0);
+    r.medio = cobros.length > 1 ? 'Combinado' : cobros[0][0];
+    return r;
+  }
   var EJEMPLOS = [
     remitoEmpresa('R-0198', '2026-09-26', '09:10', 'c1', 'Bodega Piedra Alta', [['Mantel', 11, 4000], ['Servilleta', 70, 600]]),
     remitoEmpresa('R-0201', '2026-10-02', '09:30', 'c1', 'Bodega Piedra Alta', [['Mantel', 12, 4000], ['Servilleta', 80, 600]]),
@@ -160,15 +173,26 @@
     remitoEmpresa('R-0229', HOY, '09:20', 'c1', 'Bodega Piedra Alta', [['Bolsa de lavado institucional', 6, 6500]]),
     { remito: 'R-0230', ticket: 'T-0416', iso: HOY, hora: '09:45', cliente: 'Lucía Ferreyra', tipo: 'particular',
       items: [{ nombre: 'Camisa', cant: 2, precio: 2500 }], total: 5000, pagos: [{ iso: HOY, hora: '09:45', medio: 'Efectivo', importe: 2000 }] },
+    ventaLocal('R-0196', '2026-09-24', '10:30', 'c6', 'Martín Gómez', 'particular', [['Ambo', 2, 5500]], [['Efectivo', 11000]]),
+    ventaLocal('R-0200', '2026-10-01', '09:50', 'c5', 'Lucía Ferreyra', 'particular', [['Camisa', 4, 2500]], [['Efectivo', 10000]]),
+    ventaLocal('R-0203', '2026-10-04', '11:05', 'c6', 'Martín Gómez', 'particular', [['Traje', 1, 9500], ['Camisa', 2, 2500]], [['Mercado Pago', 14500]]),
+    ventaLocal('R-0206', '2026-10-08', '10:20', 'c7', 'Carla Sosa', 'particular', [['Acolchado 2 plazas', 2, 12000]], [['Transferencia', 24000]]),
+    ventaLocal('R-0210', '2026-10-11', '12:10', 'c4', 'Hotel Cordillera', 'empresa', [['Mantel', 8, 4000]], [['Transferencia', 32000]]),
+    ventaLocal('R-0213', '2026-10-15', '09:15', 'c5', 'Lucía Ferreyra', 'particular', [['Vestido de fiesta', 1, 8500]], [['Efectivo', 8500]]),
+    ventaLocal('R-0217', '2026-10-18', '10:45', 'c6', 'Martín Gómez', 'particular', [['Saco', 2, 5000]], [['Efectivo', 6000], ['Mercado Pago', 4000]]),
+    ventaLocal('R-0221', '2026-10-22', '11:30', 'c7', 'Carla Sosa', 'particular', [['Camisa', 3, 2500], ['Pantalón', 2, 3000]], [['Efectivo', 13500]]),
     // Empresa que pagó en el mostrador: venta normal, entra en caja.
     { remito: 'R-0231', ticket: 'T-0417', iso: HOY, hora: '10:00', cliente: 'Hotel Cordillera', tipo: 'empresa',
       items: [{ nombre: 'Mantel', cant: 10, precio: 4000 }], total: 40000, pagos: [{ iso: HOY, hora: '10:00', medio: 'Transferencia', importe: 40000 }] }
   ];
-  var FACTURAS_EJEMPLO = [{ numero: 'A 0003-00000412', tipo: 'A', clienteId: 'c4', cliente: 'Hotel Cordillera', cuit: '30-71555444-0', iso: HOY, hora: '10:20',
+  var FACTURAS_EJEMPLO = [{ numero: 'A 0003-00000411', tipo: 'A', clienteId: 'c1', cliente: 'Bodega Piedra Alta', cuit: '30-71111111-1', iso: '2026-10-01', hora: '09:00',
+    renglones: [{ nombre: 'Mantel', cant: 11, precio: 4000 }, { nombre: 'Servilleta', cant: 70, precio: 600 }], observaciones: 'Corresponde a remito R-0198.', oc: '', periodo: '01/09/2026 al 30/09/2026', remitos: ['R-0198'], total: 86000 },
+    { numero: 'A 0003-00000412', tipo: 'A', clienteId: 'c4', cliente: 'Hotel Cordillera', cuit: '30-71555444-0', iso: HOY, hora: '10:20',
     renglones: [{ nombre: 'Mantel', cant: 10, precio: 4000 }], observaciones: 'Corresponde a remito R-0231.', oc: '', periodo: '', remitos: ['R-0231'], total: 40000 }];
-  var DATOS = 2; // versión de los datos de ejemplo
+  var DATOS = 3; // versión de los datos de ejemplo
   if (!S.remitosEjemplo) S.remitosEjemplo = JSON.parse(JSON.stringify(EJEMPLOS));
   if (S.datos !== DATOS) {
+    var versionPrevia = S.datos || 1;
     // Quien ya abrió la demo conserva lo que cargó; se suman los ejemplos nuevos y se pasan a
     // cuenta empresa los remitos de empresa que quedaron "Debe" sin ningún pago.
     EJEMPLOS.forEach(function (e) {
@@ -177,11 +201,15 @@
       else if (e.cuentaEmpresa && !pagos(x).length) { x.cuentaEmpresa = true; x.medio = 'Empresa'; x.clienteId = x.clienteId || e.clienteId; }
     });
     S.remitosEjemplo.sort(function (a, b) { return a.remito < b.remito ? -1 : 1; });
-    S.ventas.forEach(function (v) { if (v.tipo === 'empresa' && Array.isArray(v.pagos) && !v.pagos.length) { v.cuentaEmpresa = true; v.medio = 'Empresa'; } });
+    // Sólo al pasar desde la demo anterior a Empresas: después, un "Debe" de empresa es una elección.
+    if (versionPrevia < 2) S.ventas.forEach(function (v) { if (v.tipo === 'empresa' && Array.isArray(v.pagos) && !v.pagos.length) { v.cuentaEmpresa = true; v.medio = 'Empresa'; } });
+    PEDIDOS_SIN_RETIRAR.forEach(function (p) { if (!S.pedidos.some(function (x) { return x.n === p.n; })) S.pedidos.push(JSON.parse(JSON.stringify(p))); });
     [['Servilleta', 600, true, 'dinner_dining'], ['Trapo de cocina', 500, false, 'texture']].forEach(function (p) {
       if (!S.precios.some(function (x) { return norm(x.nombre) === norm(p[0]); })) S.precios.push({ nombre: p[0], precio: p[1], rapida: p[2], icono: p[3] });
     });
-    if (!S.facturasEmitidas) S.facturasEmitidas = JSON.parse(JSON.stringify(FACTURAS_EJEMPLO));
+    S.facturasEmitidas = S.facturasEmitidas || [];
+    FACTURAS_EJEMPLO.forEach(function (f) { if (!S.facturasEmitidas.some(function (x) { return x.numero === f.numero; })) S.facturasEmitidas.push(JSON.parse(JSON.stringify(f))); });
+    S.facturasEmitidas.sort(function (a, b) { return a.iso === b.iso ? (a.hora < b.hora ? -1 : 1) : a.iso < b.iso ? -1 : 1; });
     if (!S.sigFacturaB) S.sigFacturaB = 128;
     S.datos = DATOS; save();
   }
@@ -547,6 +575,91 @@
     buscar.addEventListener('input', pintar); pintar();
     var ventana = modal('Facturas emitidas', cuerpo, [{ texto: 'Cerrar', accion: function () {} }]);
     $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[860px]');
+  }
+
+  // ── Resumen del mes en plata (sólo dueño) ─────────────────────────
+  // Local: lo vendido en el mostrador (cobrado y pendiente). Empresas: lo facturado en el mes.
+  // Una factura de una venta del mostrador ya está en el local y no se suma dos veces.
+  function datosResumen(mes) {
+    var x = d(mes + '-01'); x.setMonth(x.getMonth() + 1); x.setDate(0);
+    var inicio = mes + '-01', fin = mes + '-' + ('0' + x.getDate()).slice(-2);
+    function en(iso) { return !!iso && iso >= inicio && iso <= fin; }
+    var locales = ventas().filter(function (v) { return !v.cuentaEmpresa && en(v.iso); });
+    var r = { inicio: inicio, fin: fin, locales: locales, vendido: 0, cobrado: 0, pendiente: 0, medios: {}, clientes: {}, facturado: 0, empresas: {}, facturas: [], excluidas: 0, cuentaRemitos: 0, cuentaPrendas: 0 };
+    locales.forEach(function (v) {
+      var c = clienteRegistro(v), k = c ? c.id : 'sin:' + v.cliente;
+      var pagadoAlCierre = pagos(v).filter(function (p) { return p.iso <= fin; }).reduce(function (n, p) { return n + p.importe; }, 0);
+      var pend = Math.max(0, v.total - pagadoAlCierre);
+      r.vendido += v.total; r.pendiente += pend;
+      if (!r.clientes[k]) r.clientes[k] = { nombre: c ? c.nombre : v.cliente, tipo: c ? c.tipo : v.tipo, remitos: 0, vendido: 0, pendiente: 0 };
+      r.clientes[k].remitos++; r.clientes[k].vendido += v.total; r.clientes[k].pendiente += pend;
+    });
+    ventas().forEach(function (v) {
+      if (v.cuentaEmpresa) { if (en(v.iso)) { r.cuentaRemitos++; r.cuentaPrendas += (v.items || []).reduce(function (n, it) { return n + it.cant; }, 0); } return; }
+      pagos(v).forEach(function (p) { if (!en(p.iso)) return; r.cobrado += p.importe; r.medios[p.medio] = (r.medios[p.medio] || 0) + p.importe; });
+    });
+    var locales0 = {}; ventas().forEach(function (v) { if (!v.cuentaEmpresa) locales0[v.remito] = true; });
+    (S.facturasEmitidas || []).forEach(function (f) {
+      if (!en(f.iso)) return;
+      if (f.remitos && f.remitos.length && f.remitos.every(function (n) { return locales0[n]; })) { r.excluidas++; return; }
+      r.facturas.push(f); r.facturado += f.total;
+      var k = f.clienteId || f.cliente;
+      if (!r.empresas[k]) r.empresas[k] = { nombre: f.cliente, facturas: 0, total: 0 };
+      r.empresas[k].facturas++; r.empresas[k].total += f.total;
+    });
+    r.total = r.vendido + r.facturado;
+    return r;
+  }
+  function mesNombre(mes) { var n = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']; return n[+mes.slice(5, 7) - 1] + ' de ' + mes.slice(0, 4); }
+  function resumenMes() {
+    var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-4'; cuerpo.setAttribute('data-resumen-mes', '');
+    var mesActual = HOY.slice(0, 7), anterior = (function () { var x = d(mesActual + '-01'); x.setMonth(x.getMonth() - 1); return x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2); })();
+    cuerpo.innerHTML = '<div class="flex flex-wrap items-end gap-2">' + campo('Mes', '<input type="month" data-res-mes aria-label="Mes del resumen" class="' + INPUT + '" value="' + mesActual + '">') +
+      '<button type="button" data-cb-periodo data-res-atajo="' + mesActual + '">Este mes</button><button type="button" data-cb-periodo data-res-atajo="' + anterior + '">Mes anterior</button></div>' +
+      '<div data-res-contenido class="flex flex-col gap-4"></div>';
+    var mesIn = $('[data-res-mes]', cuerpo), cont = $('[data-res-contenido]', cuerpo), actual = null;
+    function tabla(cab, filas, vacio) {
+      return '<div class="overflow-x-auto"><table class="w-full text-sm text-on-surface"><thead><tr>' + cab.map(function (c, i) { return '<th class="' + (i ? 'text-right' : 'text-left') + ' py-1">' + c + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        (filas.length ? filas.join('') : '<tr><td colspan="' + cab.length + '" class="py-2 text-on-surface-variant">' + vacio + '</td></tr>') + '</tbody></table></div>';
+    }
+    function pintar() {
+      if (!/^\d{4}-\d{2}$/.test(mesIn.value)) { cont.innerHTML = '<p class="text-error">Elegí un mes</p>'; return; }
+      var r = actual = datosResumen(mesIn.value);
+      $$('[data-res-atajo]', cuerpo).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.resAtajo === mesIn.value)); });
+      var clientes = Object.keys(r.clientes).map(function (k) { return r.clientes[k]; }).sort(function (a, b) { return b.vendido - a.vendido; });
+      var empresas = Object.keys(r.empresas).map(function (k) { return r.empresas[k]; }).sort(function (a, b) { return b.total - a.total; });
+      cont.innerHTML = '<h3 class="font-headline-md text-[20px] font-bold text-on-surface">Resumen de ' + esc(mesNombre(mesIn.value)) + '</h3>' +
+        '<div data-cb-resumen data-res-tarjetas><div><span>Vendido en el local</span><strong data-res-local>' + plata(r.vendido) + '</strong></div>' +
+        '<div><span>Facturado</span><strong data-res-empresas>' + plata(r.facturado) + '</strong></div>' +
+        '<div data-res-total-caja><span>Total del mes</span><strong data-res-total>' + plata(r.total) + '</strong></div></div>' +
+        '<p data-res-cobro class="text-sm text-on-surface">Local: cobrado en el mes <b data-cb-importe="pagado">' + plata(r.cobrado) + '</b> · pendiente de cobro <b data-cb-importe="' + (r.pendiente ? 'pendiente' : 'pagado') + '">' + plata(r.pendiente) + '</b>' +
+        ' · ' + r.locales.length + (r.locales.length === 1 ? ' venta' : ' ventas') + '</p>' +
+        '<div class="grid gap-4" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">' +
+        '<section><h4 class="font-label-md text-on-surface mb-1">Cobrado por medio de pago</h4>' + tabla(['Medio', 'Cobrado'], MEDIOS.filter(function (m) { return r.medios[m]; }).map(function (m) { return '<tr class="border-b border-outline"><td class="py-1.5">' + m + '</td><td data-cb-importe="total">' + plata(r.medios[m]) + '</td></tr>'; }), 'Sin cobros en el mes.') + '</section>' +
+        '<section><h4 class="font-label-md text-on-surface mb-1">Facturado por cliente</h4>' + tabla(['Cliente', 'Facturas', 'Total'], empresas.map(function (e) { return '<tr class="border-b border-outline"><td class="py-1.5">' + esc(e.nombre) + '</td><td class="text-right">' + e.facturas + '</td><td data-cb-importe="total">' + plata(e.total) + '</td></tr>'; }), 'Sin facturas en el mes.') + '</section></div>' +
+        '<section><h4 class="font-label-md text-on-surface mb-1">Ventas del local por cliente</h4>' + tabla(['Cliente', 'Ventas', 'Vendido', 'Pendiente'], clientes.map(function (c) { return '<tr class="border-b border-outline"><td class="py-1.5">' + esc(c.nombre) + (c.tipo === 'empresa' ? ' <span class="text-xs text-on-surface-variant">(empresa en mostrador)</span>' : '') + '</td><td class="text-right">' + c.remitos + '</td><td data-cb-importe="total">' + plata(c.vendido) + '</td><td data-cb-importe="' + (c.pendiente ? 'pendiente' : 'pagado') + '">' + plata(c.pendiente) + '</td></tr>'; }), 'Sin ventas del local en el mes.') + '</section>' +
+        '<p class="text-xs text-on-surface-variant">Remitos de empresa del mes: ' + r.cuentaRemitos + ' (' + r.cuentaPrendas.toLocaleString('es-AR') + ' prendas). Su valor entra cuando se facturan desde Empresas. Facturado incluye facturas a empresas y facturas libres.' +
+        (r.excluidas ? ' ' + r.excluidas + (r.excluidas === 1 ? ' factura de una venta del mostrador no se suma' : ' facturas de ventas del mostrador no se suman') + ' a empresas porque ya está en el local.' : '') + '</p>';
+    }
+    async function excel() {
+      if (!actual) return;
+      try {
+        var XLSX = await biblioteca('XLSX', 'xlsx-0.20.3.min.js'), r = actual, libro = XLSX.utils.book_new();
+        var hoja1 = XLSX.utils.aoa_to_sheet([['Resumen de ' + mesNombre(mesIn.value)], [], ['Vendido en el local', r.vendido], ['Cobrado en el mes (local)', r.cobrado], ['Pendiente de cobro (local)', r.pendiente], ['Facturado (empresas y libres)', r.facturado], ['Total del mes', r.total]]
+          .concat([[], ['Medio de pago', 'Cobrado']], MEDIOS.filter(function (m) { return r.medios[m]; }).map(function (m) { return [m, r.medios[m]]; })));
+        hoja1['!cols'] = [{ wch: 32 }, { wch: 16 }];
+        XLSX.utils.book_append_sheet(libro, hoja1, 'Resumen');
+        XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(r.locales.map(function (v) { return { Fecha: v.iso, Remito: v.remito, Cliente: v.cliente, Total: v.total, Cobrado: cobrado(v), 'Pendiente hoy': saldo(v) }; })), 'Ventas del local');
+        XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(r.facturas.map(function (f) { return { Fecha: f.iso, Factura: f.numero, Cliente: f.cliente, Total: f.total }; })), 'Facturas');
+        XLSX.writeFile(libro, 'CLEANBOX-resumen-' + mesIn.value + '.xlsx', { compression: true }); toast('Resumen descargado en Excel');
+      } catch (e) { toast('No se pudo generar el Excel. Volvé a intentar.', 'error'); }
+    }
+    mesIn.addEventListener('input', pintar);
+    $$('[data-res-atajo]', cuerpo).forEach(function (b) { b.addEventListener('click', function () { mesIn.value = b.dataset.resAtajo; pintar(); }); });
+    pintar();
+    var ventana = modal('Resumen del mes', cuerpo, [{ texto: 'Descargar Excel', accion: function () { excel(); return false; } }, { texto: 'Cerrar', accion: function () {} }]);
+    $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[860px]');
+    return ventana;
   }
 
   function consultarMovimientos(alCambiar, cliente) {
@@ -1043,7 +1156,10 @@
         '<div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant mb-3">' + meta + '</div>' +
         '<div class="pt-2 border-t border-outline flex flex-wrap justify-end gap-2"><button type="button" data-acc="remito" class="' + BTN + '">' + (remito ? (remito.cuentaEmpresa ? 'Ver remito' : 'Ver remito / pagos') : 'Remito / anticipo') + '</button>' + accion + '</div></div></article>';
     }
+    // Listo cuya fecha de entrega ya pasó: sale solo del tablero y queda en "Sin retirar".
+    function sinRetirar(p) { return p.estado === 'listo' && !!p.entrega && p.entrega < HOY; }
     function pasa(p) {
+      if (sinRetirar(p)) return false;
       if (filtro === 'hoy') return p.entrega === HOY;
       if (filtro === 'manana') return p.entrega === addDias(HOY, 1);
       if (filtro === 'semana') return p.entrega <= addDias(HOY, 7);
@@ -1057,8 +1173,35 @@
           '<p class="text-xs text-on-surface-variant text-center py-space-md">Sin pedidos</p>';
         var cont = $$('span', $('div', sec)).pop(); cont.textContent = lista.length;
       });
-      var activos = S.pedidos.filter(function (p) { return p.estado !== 'entregado'; });
+      var activos = S.pedidos.filter(function (p) { return p.estado !== 'entregado' && !sinRetirar(p); });
       var tabTodos = byText('button', 'Todos')[0]; if (tabTodos) tabTodos.textContent = 'Todos (' + activos.length + ')';
+      var pendientes = S.pedidos.filter(sinRetirar).length;
+      if (btnSinRetirar) { btnSinRetirar.textContent = 'Sin retirar · ' + pendientes; btnSinRetirar.dataset.cantidad = pendientes; }
+    }
+    var btnSinRetirar = null;
+    function verSinRetirar() {
+      var cuerpo = document.createElement('div'); cuerpo.className = 'flex flex-col gap-3'; cuerpo.setAttribute('data-sin-retirar-lista', '');
+      var ventana;
+      function pintar() {
+        var lista = S.pedidos.filter(sinRetirar).sort(function (a, b) { return a.entrega < b.entrega ? -1 : 1; });
+        cuerpo.innerHTML = '<p class="text-sm text-on-surface-variant">Pedidos listos cuya fecha de entrega ya pasó. Salen solos del tablero para que no se acumulen; acá se entregan cuando el cliente los retira.</p>' +
+          (lista.map(function (p) {
+            var v = ventaPedido(p), prendas = v ? v.items : p.items;
+            var detalle = prendas && prendas.length ? prendas.map(function (it) { return it.cant + ' ' + it.nombre; }).join(' · ') : p.detalle;
+            return '<div data-sr="' + p.n + '" class="p-3 rounded border border-outline flex flex-wrap items-center justify-between gap-2">' +
+              '<div class="min-w-0"><span data-cb-numero>#' + p.n + '</span> <b class="text-on-surface">' + esc(p.cliente) + '</b>' +
+              '<div class="text-xs text-on-surface-variant">' + esc(detalle || '') + ' · Entrega ' + esc(fechaCorta(p.entrega)) + (v ? ' · ' + esc(v.remito) : ' · sin remito') + '</div></div>' +
+              '<button type="button" data-sr-entregar="' + p.n + '" data-cb-accion="secundaria" class="' + BTN + '">' + (v ? 'Ver remito y entregar' : 'Entregar y cobrar') + '</button></div>';
+          }).join('') || '<p class="py-2 text-on-surface-variant">No hay pedidos sin retirar.</p>');
+      }
+      cuerpo.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-sr-entregar]'); if (!b) return;
+        var p = S.pedidos.filter(function (x) { return x.n === +b.dataset.srEntregar; })[0], v = ventaPedido(p);
+        if (v) verRemito(v, function () { pintar(); render(); }); else location.href = 'venta.html?pedido=' + p.n + '&entregar=1';
+      });
+      pintar();
+      ventana = modal('Sin retirar', cuerpo, [{ texto: 'Cerrar', accion: function () {} }]);
+      $('div.w-full', ventana).classList.replace('max-w-[480px]', 'max-w-[640px]');
     }
     document.addEventListener('click', function (e) {
       var b = e.target.closest('[data-acc]'); if (!b) return;
@@ -1079,6 +1222,10 @@
     var TAB_OFF = 'text-on-surface-variant pb-space-sm font-label-md text-label-md hover:text-on-surface transition-colors';
     var tabs = $$('main > div:nth-of-type(1) > button');
     var claves = ['todos', 'hoy', 'manana', 'semana'];
+    btnSinRetirar = document.createElement('button'); btnSinRetirar.type = 'button'; btnSinRetirar.className = BTN + ' ml-auto';
+    btnSinRetirar.setAttribute('data-sin-retirar', ''); btnSinRetirar.dataset.cbAccion = 'secundaria';
+    btnSinRetirar.addEventListener('click', verSinRetirar);
+    tabs[tabs.length - 1].after(btnSinRetirar);
     tabs.forEach(function (t, i) {
       t.addEventListener('click', function () {
         filtro = claves[i];
@@ -1645,12 +1792,14 @@
     contado.addEventListener('input', dif); dif();
     var barra = document.createElement('div'); barra.className = 'px-space-lg py-3 border-b border-outline flex flex-wrap items-end gap-3';
     barra.innerHTML = '<label class="text-xs text-on-surface">Fecha de caja<input aria-label="Fecha de caja" data-fecha-caja type="date" value="' + HOY + '" class="' + INPUT + '"></label>' +
-      '<button type="button" data-consultar class="' + BTN + '">Ventas y clientes / buscar remitos</button>';
+      '<button type="button" data-consultar class="' + BTN + '">Ventas y clientes / buscar remitos</button>' +
+      (esDueno() ? '<button type="button" data-resumen-mes-btn data-cb-accion="secundaria" class="' + BTN + '">Resumen del mes</button>' : '');
     $('header').after(barra);
     var fechaCaja = $('[data-fecha-caja]', barra);
     var resumenDeuda = document.createElement('p'); resumenDeuda.className = 'px-space-lg py-2 text-sm text-on-surface'; barra.after(resumenDeuda);
     $('main thead tr').innerHTML = ['Hora', 'Remito', 'Cliente', 'Medios del día', 'Cobrado en fecha', 'Pagado a fecha', 'Debe a fecha', ''].map(function (t) { return '<th class="px-3 py-2 text-left whitespace-nowrap">' + t + '</th>'; }).join('');
     $('[data-consultar]', barra).addEventListener('click', function () { consultarMovimientos(renderCaja); });
+    if ($('[data-resumen-mes-btn]', barra)) $('[data-resumen-mes-btn]', barra).addEventListener('click', resumenMes);
     function renderCaja() {
       MEDIOS.forEach(function (m) { tot[m] = [0, 0]; }); total = 0; n = 0; tbody.innerHTML = '';
       var movimientos = [], vistos = {}, deudaDia = 0;
@@ -1785,6 +1934,7 @@
     document.title = 'Empresas | CLEANBOX Tintorería';
     var empresas = S.clientes.filter(function (c) { return c.tipo === 'empresa'; });
     var cont = cabeceraPagina('Empresas', 'Cantidades de los remitos de empresa y facturación del período. Sólo la ve el dueño.',
+      '<button type="button" data-emp-resumen-mes data-cb-accion="secundaria" class="' + BTN + '">Resumen del mes</button>' +
       '<button type="button" data-emp-libre data-cb-accion="secundaria" class="' + BTN + '">Factura libre</button>' +
       '<button type="button" data-emp-facturas data-cb-accion="secundaria" class="' + BTN + '"></button>');
     cont.innerHTML = '<div data-emp-filtros class="flex flex-col gap-3"><div class="flex flex-wrap items-end gap-3">' +
@@ -1886,6 +2036,7 @@
       abrirFactura({ titulo: 'Factura libre', cliente: sel.value ? empresas.filter(function (c) { return c.id === sel.value; })[0] : null, alEmitir: pintarFacturas });
     });
     btnFacturas.addEventListener('click', function () { verFacturas(sel.value); });
+    $('[data-emp-resumen-mes]').addEventListener('click', resumenMes);
     var pre = new URLSearchParams(location.search).get('clienteId');
     if (pre && empresas.some(function (c) { return c.id === pre; })) sel.value = pre;
     pintarFacturas(); periodo('mes');
@@ -2268,6 +2419,9 @@
       'body [data-emp-grupo] td{background:var(--cb-secondary-fixed);color:var(--cb-on-secondary-fixed-variant);font-weight:700;font-size:14px}' +
       'body [data-emp-resumen] [data-cb-resumen] strong{color:var(--cb-on-secondary-fixed-variant)}' +
       'body [data-emp-armar]:disabled{cursor:not-allowed}' +
+      'body [data-res-total-caja]{background:var(--cb-primary)!important;border-color:var(--cb-primary)!important}' +
+      'body [data-res-total-caja] span,body [data-res-total-caja] strong{color:var(--cb-on-primary)!important}' +
+      'body [data-resumen-mes] [data-cb-periodo][aria-pressed=true]{background:var(--cb-primary);border-color:var(--cb-primary);color:var(--cb-on-primary)}' +
       'body [data-cb-cuenta-empresa]{border-left:5px solid var(--cb-secondary);background:var(--cb-secondary-fixed)}' +
       'body [data-cb-cuenta-empresa] b,body [data-cb-cuenta-empresa] span{color:var(--cb-on-secondary-fixed-variant)}' +
       'body[data-view=venta] main>section:last-child[data-cb-remito-empresa=true]{border-left-color:var(--cb-secondary)}' +
